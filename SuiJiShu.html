@@ -2,10 +2,12 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- PWA全屏模式设置 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#6e8efb">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <title>随机数生成器</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -25,6 +27,7 @@
             flex-direction: column;
             color: #333;
             position: relative;
+            touch-action: none;
             transition: background 0.5s ease;
         }
         
@@ -67,14 +70,14 @@
         }
         
         .random-number {
-            font-size: 96px;
+            font-size: 120px; /* 放大随机数字体 */
             font-weight: 800;
             color: #5e72e4;
             margin: 20px 0;
             text-shadow: 0 4px 10px rgba(94, 114, 228, 0.2);
-            transition: all 0.3s ease;
             position: relative;
             z-index: 2;
+            transition: all 0.3s ease;
         }
         
         .animate-number {
@@ -99,8 +102,7 @@
             gap: 10px;
             position: relative;
             z-index: 2;
-            /* iOS13修复：移除backdrop-filter */
-            /* backdrop-filter: blur(5px); */
+            backdrop-filter: blur(5px);
             transition: all 0.5s ease;
         }
         
@@ -185,8 +187,8 @@
             border-radius: 12px;
             font-size: 18px;
             outline: none;
-            transition: border-color 0.3s, background 0.5s ease;
             background: #f8f9ff;
+            transition: border-color 0.3s, background 0.5s ease;
         }
         
         .input-group input:focus {
@@ -204,8 +206,8 @@
             font-weight: 600;
             width: 100%;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s, background 0.5s ease;
             box-shadow: 0 4px 15px rgba(94, 114, 228, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s, background 0.5s ease;
         }
         
         .save-btn:active {
@@ -242,14 +244,14 @@
             font-size: 16px;
             z-index: 200;
             transition: transform 0.4s ease;
-            /* iOS13修复：移除backdrop-filter */
-            /* backdrop-filter: blur(10px); */
+            backdrop-filter: blur(10px);
         }
         
         .notification.show {
             transform: translateX(-50%) translateY(0);
         }
         
+        /* 添加到主屏幕提示样式 */
         .add-to-home {
             text-align: center;
             color: #888;
@@ -260,14 +262,27 @@
             transition: color 0.5s ease, border-color 0.5s ease;
         }
         
-        /* ************** 暗黑模式样式 - 修复版本 ************** */
+        .add-to-home a {
+            color: #5e72e4;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        .add-to-home a:hover {
+            background: rgba(94, 114, 228, 0.1);
+            text-decoration: underline;
+        }
+        
+        /* ************** 暗黑模式样式 ************** */
         body.dark-mode {
             background: linear-gradient(135deg, #4a00e0, #8e2de2);
         }
         
-        /* iOS13修复：使用不透明背景替代半透明 */
         .dark-mode .main-content {
-            background: #1e1e2e; /* 不透明背景 */
+            background: rgba(30, 30, 46, 0.95);
         }
         
         .dark-mode .app-title,
@@ -277,7 +292,7 @@
         }
         
         .dark-mode .range-display {
-            background: rgba(166, 176, 255, 0.2); /* 增加不透明度 */
+            background: rgba(166, 176, 255, 0.1);
             color: #a6b0ff;
         }
         
@@ -320,89 +335,17 @@
             border-top: 1px solid #333;
         }
         
-        /* ************** PWA安装提示 - 修复版本 ************** */
-        .pwa-install-prompt {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 16px;
-            padding: 15px;
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            max-width: 90%;
-            transition: opacity 0.3s ease;
-            /* iOS13修复：移除backdrop-filter */
-            /* backdrop-filter: blur(10px); */
+        .dark-mode .add-to-home a {
+            color: #a6b0ff;
         }
         
-        .dark-mode .pwa-install-prompt {
-            background: #1e1e2e; /* 不透明背景 */
-        }
-        
-        .pwa-install-prompt p {
-            font-size: 14px;
-            color: #333;
-            margin: 0;
-        }
-        
-        .dark-mode .pwa-install-prompt p {
-            color: #ddd;
-        }
-        
-        .pwa-install-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .pwa-install-btn {
-            background: #5e72e4;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 15px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        
-        .pwa-install-btn:hover {
-            background: #4a5bd0;
-        }
-        
-        .pwa-dismiss-btn {
-            background: transparent;
-            color: #888;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 8px 15px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .dark-mode .pwa-dismiss-btn {
-            border-color: #555;
-            color: #aaa;
-        }
-        
-        .pwa-dismiss-btn:hover {
-            background: #f5f5f5;
-        }
-        
-        .dark-mode .pwa-dismiss-btn:hover {
-            background: #252536;
+        .dark-mode .add-to-home a:hover {
+            background: rgba(166, 176, 255, 0.1);
         }
         
         @media (max-height: 700px) {
             .random-number {
-                font-size: 80px;
+                font-size: 100px; /* 响应式调整 */
             }
             .settings-panel {
                 height: 70%;
@@ -410,31 +353,25 @@
             }
         }
         
-        /* ************** 全屏模式调整 ************** */
         @media all and (display-mode: standalone) {
             body {
                 overflow: hidden;
+                padding-top: env(safe-area-inset-top);
             }
             .app-header {
-                top: 40px;
+                top: calc(20px + env(safe-area-inset-top));
             }
             .instruction {
-                bottom: 60px;
+                bottom: calc(40px + env(safe-area-inset-bottom));
             }
-        }
-        
-        /* iOS13特定修复 */
-        @media not all and (min-resolution:.001dpcm) { 
-            @supports (-webkit-appearance:none) and (stroke-color:transparent) {
-                /* 针对iOS13的特定修复 */
-                .dark-mode .main-content {
-                    background: #1e1e2e !important; /* 强制不透明 */
-                }
-                .dark-mode .range-display,
-                .dark-mode .notification,
-                .dark-mode .pwa-install-prompt {
-                    background: rgba(30, 30, 46, 0.98) !important; /* 高不透明度 */
-                }
+            .main-content {
+                padding-top: calc(20px + env(safe-area-inset-top));
+                padding-bottom: calc(20px + env(safe-area-inset-bottom));
+            }
+            
+            /* 在PWA模式下隐藏添加到主屏幕提示 */
+            .add-to-home {
+                display: none !important;
             }
         }
     </style>
@@ -481,27 +418,24 @@
                 <i class="fas fa-save"></i> 保存设置
             </button>
             
-            <div class="add-to-home">
-                <i class="fas fa-mobile-alt"></i> 可添加到主屏幕使用
+            <!-- 添加到主屏幕提示 -->
+            <div class="add-to-home" id="addToHomePrompt">
+                <i class="fas fa-mobile-alt"></i> 可<a href="add_to_home_guide.html" target="_blank">添加到主屏幕</a>使用
             </div>
         </div>
     </div>
     
     <div class="notification" id="notification">设置已保存</div>
     
-    <div class="pwa-install-prompt" id="installPrompt" style="display: none;">
-        <p>添加到主屏幕，获得更好的使用体验</p>
-        <div class="pwa-install-buttons">
-            <button class="pwa-install-btn" id="installBtn">添加</button>
-            <button class="pwa-dismiss-btn" id="dismissBtn">取消</button>
-        </div>
-    </div>
-    
     <script>
         // 当前设置
         let minValue = 1;
         let maxValue = 100;
-        let deferredPrompt;
+        
+        // 触摸状态跟踪变量
+        let touchStartY = 0;
+        let touchEndY = 0;
+        let isSwiping = false;
         
         // DOM元素
         const randomNumberEl = document.getElementById('randomNumber');
@@ -514,16 +448,17 @@
         const minInput = document.getElementById('minInput');
         const maxInput = document.getElementById('maxInput');
         const notification = document.getElementById('notification');
-        const installPrompt = document.getElementById('installPrompt');
-        const installBtn = document.getElementById('installBtn');
-        const dismissBtn = document.getElementById('dismissBtn');
+        const addToHomePrompt = document.getElementById('addToHomePrompt');
+        const body = document.body;
         
         // 生成随机数
         function generateRandomNumber() {
+            // 添加动画效果
             randomNumberEl.classList.remove('animate-number');
-            void randomNumberEl.offsetWidth;
+            void randomNumberEl.offsetWidth; // 触发重排
             randomNumberEl.classList.add('animate-number');
             
+            // 生成并显示随机数
             const randomNum = Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue;
             randomNumberEl.textContent = randomNum;
         }
@@ -539,43 +474,68 @@
             const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
             document.body.classList.toggle('dark-mode', isDarkMode);
             
-            // iOS13修复：确保主题颜色正确
+            // 更新主题颜色
             const themeColor = isDarkMode ? "#1e1e2e" : "#6e8efb";
             document.querySelector('meta[name="theme-color"]').setAttribute('content', themeColor);
+        }
+        
+        // 检测是否在PWA模式中运行
+        function checkPWA() {
+            // 检测是否在独立模式中运行（添加到主屏幕）
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                                window.navigator.standalone;
+            
+            // 如果是在PWA模式中，隐藏添加到主屏幕提示
+            if (isStandalone) {
+                addToHomePrompt.style.display = 'none';
+            }
         }
         
         // 初始化页面
         function init() {
             generateRandomNumber();
             updateRangeDisplay();
-            checkDarkMode();
+            checkDarkMode(); // 初始检测暗黑模式
+            checkPWA(); // 检测PWA模式
             
             // 监听暗黑模式变化
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', checkDarkMode);
             
-            // 点击事件：生成新随机数
-            document.body.addEventListener('click', function(e) {
-                if (!settingsPanel.classList.contains('show')) {
-                    generateRandomNumber();
-                }
-            });
-            
-            // 触摸滑动事件
-            let startY = 0;
-            let isScrolling = false;
-            
+            // 触摸事件处理
             document.body.addEventListener('touchstart', function(e) {
-                startY = e.touches[0].clientY;
-                isScrolling = false;
+                touchStartY = e.touches[0].clientY;
+                isSwiping = false;
             });
             
             document.body.addEventListener('touchmove', function(e) {
-                const currentY = e.touches[0].clientY;
-                const diffY = startY - currentY;
+                const touchY = e.touches[0].clientY;
+                const diffY = touchStartY - touchY;
                 
-                if (diffY > 30 && !isScrolling && !settingsPanel.classList.contains('show')) {
+                // 检测到向上滑动（diffY > 0 表示向上）
+                if (diffY > 30 && !isSwiping && !settingsPanel.classList.contains('show')) {
+                    isSwiping = true;
                     openSettings();
-                    isScrolling = true;
+                }
+            });
+            
+            document.body.addEventListener('touchend', function(e) {
+                const touchEndY = e.changedTouches[0].clientY;
+                
+                // 计算滑动距离
+                const distanceY = touchEndY - touchStartY;
+                const isSwipe = Math.abs(distanceY) > 10;
+                
+                // 点击手势
+                if (!isSwiping && !isSwipe && !settingsPanel.classList.contains('show')) {
+                    generateRandomNumber();
+                }
+                isSwiping = false;
+            });
+            
+            // 鼠标点击事件（用于桌面测试）
+            document.body.addEventListener('click', function(e) {
+                if (!settingsPanel.classList.contains('show')) {
+                    generateRandomNumber();
                 }
             });
             
@@ -584,24 +544,10 @@
             saveSettingsBtn.addEventListener('click', saveSettings);
             panelOverlay.addEventListener('click', closeSettings);
             
-            // PWA安装提示事件
-            installBtn.addEventListener('click', installPWA);
-            dismissBtn.addEventListener('click', dismissInstallPrompt);
-            
-            // 监听PWA安装事件
-            window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                deferredPrompt = e;
-                
-                setTimeout(() => {
-                    installPrompt.style.display = 'flex';
-                }, 3000);
-            });
-            
-            // iOS13特定修复：禁用可能引起问题的CSS属性
-            const isIOS13 = /OS 13_/.test(navigator.userAgent);
-            if (isIOS13) {
-                document.documentElement.style.setProperty('--ios13-fix', 'none');
+            // iOS全屏模式特殊处理
+            if (window.navigator.standalone) {
+                // 修复iOS全屏模式下的滚动问题
+                document.documentElement.style.overscrollBehavior = 'none';
             }
         }
         
@@ -624,6 +570,7 @@
             let newMin = parseInt(minInput.value);
             let newMax = parseInt(maxInput.value);
             
+            // 验证输入
             if (isNaN(newMin) || isNaN(newMax)) {
                 showNotification('请输入有效数字');
                 return;
@@ -639,12 +586,20 @@
                 return;
             }
             
+            // 更新设置
             minValue = newMin;
             maxValue = newMax;
             
+            // 更新显示
             updateRangeDisplay();
+            
+            // 重新生成随机数
             generateRandomNumber();
+            
+            // 关闭面板
             closeSettings();
+            
+            // 显示成功通知
             showNotification('设置已保存');
         }
         
@@ -655,26 +610,7 @@
             
             setTimeout(() => {
                 notification.classList.remove('show');
-            }, 2000);
-        }
-        
-        // 安装PWA
-        function installPWA() {
-            installPrompt.style.display = 'none';
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        console.log('用户接受安装');
-                    }
-                    deferredPrompt = null;
-                });
-            }
-        }
-        
-        // 关闭安装提示
-        function dismissInstallPrompt() {
-            installPrompt.style.display = 'none';
+            }, 1000);
         }
         
         // 初始化应用
