@@ -70,7 +70,7 @@
         }
         
         .random-number {
-            font-size: 96px;
+            font-size: 120px;
             font-weight: 800;
             color: #5e72e4;
             margin: 20px 0;
@@ -251,6 +251,7 @@
             transform: translateX(-50%) translateY(0);
         }
         
+        /* 新添加的添加到主屏幕提示样式 */
         .add-to-home {
             text-align: center;
             color: #888;
@@ -259,6 +260,20 @@
             padding: 10px;
             border-top: 1px solid #eee;
             transition: color 0.5s ease, border-color 0.5s ease;
+        }
+        
+        .add-to-home a {
+            color: #5e72e4;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        .add-to-home a:hover {
+            background: rgba(94, 114, 228, 0.1);
+            text-decoration: underline;
         }
         
         /* ************** PWA安装提示 ************** */
@@ -325,7 +340,7 @@
         
         @media (max-height: 700px) {
             .random-number {
-                font-size: 80px;
+                font-size: 100px;
             }
             .settings-panel {
                 height: 70%;
@@ -392,7 +407,7 @@
             </button>
             
             <!-- 新增添加到主屏幕提示 -->
-            <div class="add-to-home">
+            <div class="add-to-home" id="addToHomePrompt">
                 <i class="fas fa-mobile-alt"></i> 可<a href="/add_to_home_guide.html" target="_blank">添加到主屏幕</a>使用
             </div>
         </div>
@@ -446,6 +461,18 @@
         function updateRangeDisplay() {
             minValueEl.textContent = minValue;
             maxValueEl.textContent = maxValue;
+        }
+
+                // 检测是否在PWA模式中运行
+        function checkPWA() {
+            // 检测是否在独立模式中运行（添加到主屏幕）
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                                window.navigator.standalone;
+            
+            // 如果是在PWA模式中，隐藏添加到主屏幕提示
+            if (isStandalone) {
+                addToHomePrompt.style.display = 'none';
+            }
         }
         
         // 初始化页面
