@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <!-- ************** PWA全屏模式设置 ************** -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
+    <meta name="theme-color" content="#6e8efb">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <!-- ************** 应用名称 ************** -->
     <title>随机数生成器</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -118,7 +121,7 @@
         
         .settings-panel {
             position: fixed;
-            bottom: -70%;
+            bottom: -60%;
             left: 0;
             right: 0;
             height: 60%;
@@ -214,7 +217,7 @@
         
         .panel-overlay {
             position: fixed;
-            top: 0;
+            bottom: 0;
             left: 0;
             right: 0;
             height: 100%;
@@ -258,92 +261,6 @@
             transition: color 0.5s ease, border-color 0.5s ease;
         }
         
-        /* 触摸引导区域 */
-        .touch-guidance {
-            position: absolute;
-            bottom: 120px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #888;
-            font-size: 14px;
-            z-index: 3;
-            opacity: 0.8;
-            animation: bounce 2s infinite;
-        }
-        
-        .swipe-icon {
-            margin-bottom: 8px;
-            font-size: 24px;
-        }
-        
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {transform: translateX(-50%) translateY(0);}
-            40% {transform: translateX(-50%) translateY(-10px);}
-            60% {transform: translateX(-50%) translateY(-5px);}
-        }
-        
-        /* ************** 暗黑模式样式 ************** */
-        body.dark-mode {
-            background: linear-gradient(135deg, #4a00e0, #8e2de2);
-        }
-        
-        .dark-mode .main-content {
-            background: rgba(30, 30, 46, 0.95);
-        }
-        
-        .dark-mode .app-title,
-        .dark-mode .random-number {
-            color: #a6b0ff;
-            text-shadow: 0 2px 4px rgba(166, 176, 255, 0.2);
-        }
-        
-        .dark-mode .range-display {
-            background: rgba(166, 176, 255, 0.1);
-            color: #a6b0ff;
-        }
-        
-        .dark-mode .instruction {
-            color: #aaa;
-        }
-        
-        .dark-mode .settings-panel {
-            background: #1e1e2e;
-        }
-        
-        .dark-mode .settings-header {
-            border-bottom: 1px solid #333;
-        }
-        
-        .dark-mode .settings-header h2 {
-            color: #a6b0ff;
-        }
-        
-        .dark-mode .close-btn {
-            color: #a6b0ff;
-        }
-        
-        .dark-mode .input-group label {
-            color: #ddd;
-        }
-        
-        .dark-mode .input-group input {
-            background: #252536;
-            border-color: #444;
-            color: #fff;
-        }
-        
-        .dark-mode .save-btn {
-            background: linear-gradient(to right, #a6b0ff, #b197fc);
-        }
-        
-        .dark-mode .add-to-home {
-            color: #aaa;
-            border-top: 1px solid #333;
-        }
-        
         /* ************** PWA安装提示 ************** */
         .pwa-install-prompt {
             position: fixed;
@@ -363,18 +280,10 @@
             backdrop-filter: blur(10px);
         }
         
-        .dark-mode .pwa-install-prompt {
-            background: rgba(30, 30, 46, 0.95);
-        }
-        
         .pwa-install-prompt p {
             font-size: 14px;
             color: #333;
             margin: 0;
-        }
-        
-        .dark-mode .pwa-install-prompt p {
-            color: #ddd;
         }
         
         .pwa-install-buttons {
@@ -410,17 +319,8 @@
             transition: all 0.2s;
         }
         
-        .dark-mode .pwa-dismiss-btn {
-            border-color: #555;
-            color: #aaa;
-        }
-        
         .pwa-dismiss-btn:hover {
             background: #f5f5f5;
-        }
-        
-        .dark-mode .pwa-dismiss-btn:hover {
-            background: #252536;
         }
         
         @media (max-height: 700px) {
@@ -430,9 +330,6 @@
             .settings-panel {
                 height: 70%;
                 bottom: -70%;
-            }
-            .touch-guidance {
-                bottom: 90px;
             }
         }
         
@@ -447,15 +344,13 @@
             .instruction {
                 bottom: 60px;
             }
-            .touch-guidance {
-                bottom: 100px;
-            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="app-header">
+            <!-- ************** 应用名称 ************** -->
             <div class="app-title">随机数生成器</div>
         </div>
         
@@ -468,13 +363,8 @@
                 <span id="maxValue">100</span>
             </div>
             
-            <div class="touch-guidance">
-                <div class="swipe-icon"><i class="fas fa-long-arrow-alt-up"></i></div>
-                <div>向上滑动打开设置</div>
-            </div>
-            
             <div class="instruction">
-                <i class="fas fa-hand-pointer"></i> 点击屏幕刷新
+                <i class="fas fa-hand-pointer"></i> 点击屏幕刷新 • <i class="fas fa-arrow-up"></i> 上滑打开设置
             </div>
         </div>
         
@@ -482,6 +372,7 @@
         
         <div class="settings-panel" id="settingsPanel">
             <div class="settings-header">
+                <!-- ************** 设置面板标题 ************** -->
                 <h2><i class="fas fa-sliders-h"></i> 设置范围</h2>
                 <button class="close-btn" id="closeSettings">完成</button>
             </div>
@@ -508,7 +399,7 @@
     
     <div class="notification" id="notification">设置已保存</div>
     
-    <!-- PWA安装提示 -->
+    <!-- ************** PWA安装提示 ************** -->
     <div class="pwa-install-prompt" id="installPrompt" style="display: none;">
         <p>添加到主屏幕，获得更好的使用体验</p>
         <div class="pwa-install-buttons">
@@ -537,7 +428,6 @@
         const installPrompt = document.getElementById('installPrompt');
         const installBtn = document.getElementById('installBtn');
         const dismissBtn = document.getElementById('dismissBtn');
-        const touchGuidance = document.querySelector('.touch-guidance');
         
         // 生成随机数
         function generateRandomNumber() {
@@ -549,11 +439,6 @@
             // 生成并显示随机数
             const randomNum = Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue;
             randomNumberEl.textContent = randomNum;
-            
-            // 振动反馈（如果支持）
-            if (navigator.vibrate) {
-                navigator.vibrate(50);
-            }
         }
         
         // 更新范围显示
@@ -562,24 +447,10 @@
             maxValueEl.textContent = maxValue;
         }
         
-        // 暗黑模式检测
-        function checkDarkMode() {
-            const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            document.body.classList.toggle('dark-mode', isDarkMode);
-            
-            // 更新主题颜色
-            const themeColor = isDarkMode ? "#1e1e2e" : "#6e8efb";
-            document.querySelector('meta[name="theme-color"]').setAttribute('content', themeColor);
-        }
-        
         // 初始化页面
         function init() {
             generateRandomNumber();
             updateRangeDisplay();
-            checkDarkMode();
-            
-            // 监听暗黑模式变化
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', checkDarkMode);
             
             // 点击事件：生成新随机数
             document.body.addEventListener('click', function(e) {
@@ -606,9 +477,6 @@
                 if (diffY > 30 && !isScrolling && !settingsPanel.classList.contains('show')) {
                     openSettings();
                     isScrolling = true;
-                    
-                    // 隐藏触摸引导提示
-                    touchGuidance.style.display = 'none';
                 }
             });
             
@@ -632,14 +500,6 @@
                     installPrompt.style.display = 'flex';
                 }, 3000);
             });
-            
-            // 10秒后自动隐藏触摸引导提示
-            setTimeout(() => {
-                touchGuidance.style.opacity = '0';
-                setTimeout(() => {
-                    touchGuidance.style.display = 'none';
-                }, 500);
-            }, 10000);
         }
         
         // 打开设置面板
