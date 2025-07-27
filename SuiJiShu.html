@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>随机数生成器</title>
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
     <style>
         * {
             margin: 0;
@@ -38,6 +37,7 @@
             flex-direction: column;
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
+            position: relative;
         }
         
         header {
@@ -63,6 +63,7 @@
             align-items: center;
             padding: 30px 20px;
             position: relative;
+            z-index: 1; /* 确保内容在遮罩层上方 */
         }
         
         .random-number {
@@ -72,6 +73,8 @@
             margin: 20px 0;
             text-shadow: 0 4px 10px rgba(94, 114, 228, 0.2);
             transition: all 0.3s ease;
+            position: relative;
+            z-index: 2; /* 确保数字在遮罩层上方 */
         }
         
         .animate-number {
@@ -94,6 +97,8 @@
             font-weight: 500;
             display: flex;
             gap: 10px;
+            position: relative;
+            z-index: 2; /* 确保范围显示在遮罩层上方 */
         }
         
         .instruction {
@@ -105,19 +110,22 @@
             color: #888;
             font-size: 15px;
             padding: 0 20px;
+            z-index: 2; /* 确保说明文本在遮罩层上方 */
         }
         
         .settings-panel {
             position: absolute;
-            bottom: -100%;
+            bottom: -60%; /* 只覆盖下半部分 */
             left: 0;
             right: 0;
+            height: 60%; /* 只占屏幕60%高度 */
             background: white;
             border-radius: 24px 24px 0 0;
-            padding: 32px 20px;
+            padding: 32px 20px 20px;
             box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
             transition: bottom 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-            z-index: 100;
+            z-index: 10; /* 低于主内容 */
+            overflow-y: auto;
         }
         
         .settings-panel.show {
@@ -199,11 +207,12 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.3); /* 更透明的遮罩 */
             opacity: 0;
             visibility: hidden;
             transition: all 0.4s ease;
-            z-index: 50;
+            z-index: 5; /* 低于主内容 */
+            pointer-events: auto; /* 允许点击穿透 */
         }
         
         .overlay.show {
@@ -236,11 +245,17 @@
             font-size: 14px;
             border-top: 1px solid rgba(0, 0, 0, 0.05);
             background: rgba(255, 255, 255, 0.95);
+            position: relative;
+            z-index: 2; /* 确保页脚在遮罩层上方 */
         }
         
         @media (max-height: 700px) {
             .random-number {
                 font-size: 80px;
+            }
+            .settings-panel {
+                height: 70%; /* 在小屏幕上占更多空间 */
+                bottom: -70%;
             }
         }
     </style>
@@ -329,8 +344,8 @@
             
             // 点击事件：生成新随机数
             document.body.addEventListener('click', function(e) {
-                // 排除设置面板区域的点击
-                if (!settingsPanel.contains(e.target)) {
+                // 只有当设置面板未显示时才生成随机数
+                if (!settingsPanel.classList.contains('show')) {
                     generateRandomNumber();
                 }
             });
@@ -349,7 +364,7 @@
                 const diffY = startY - currentY;
                 
                 // 检测到向上滑动
-                if (diffY > 30 && !isScrolling) {
+                if (diffY > 30 && !isScrolling && !settingsPanel.classList.contains('show')) {
                     openSettings();
                     isScrolling = true;
                 }
@@ -369,14 +384,12 @@
             maxInput.value = maxValue;
             settingsPanel.classList.add('show');
             overlay.classList.add('show');
-            document.body.style.overflow = 'hidden';
         }
         
         // 关闭设置面板
         function closeSettings() {
             settingsPanel.classList.remove('show');
             overlay.classList.remove('show');
-            document.body.style.overflow = '';
         }
         
         // 保存设置
