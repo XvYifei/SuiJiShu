@@ -2,14 +2,16 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <!-- ************** PWA全屏模式设置 ************** -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>添加到主屏幕教程 - 随机数生成器</title>
+    
+    <!-- 添加到主屏幕的设置 -->
+    <meta name="apple-mobile-web-app-title" content="随机数生成">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#6e8efb">
-    <link rel="apple-touch-icon" href="apple-touch-icon.png">
-    <!-- ************** 应用名称 ************** -->
-    <title>随机数生成</title>
+    <!-- 内嵌SVG图标（180x180像素） -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='36' fill='%235e72e4'/%3E%3Crect x='35' y='35' width='110' height='110' rx='22' fill='white'/%3E%3Ccircle cx='70' cy='70' r='12' fill='%235e72e4'/%3E%3Ccircle cx='110' cy='70' r='12' fill='%235e72e4'/%3E%3Ccircle cx='70' cy='110' r='12' fill='%235e72e4'/%3E%3Ccircle cx='110' cy='110' r='12' fill='%235e72e4'/%3E%3Ccircle cx='90' cy='90' r='12' fill='%235e72e4'/%3E%3C/svg%3E">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -22,43 +24,22 @@
         
         body {
             background: linear-gradient(135deg, #6e8efb, #a777e3);
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
+            overflow-x: hidden;
             display: flex;
             flex-direction: column;
             color: #333;
             position: relative;
-            transition: background 0.5s ease;
         }
         
-        .container {
-            width: 100%;
-            height: 100vh;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-        
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            position: relative;
-            z-index: 1;
+        .header {
             background: rgba(255, 255, 255, 0.95);
-            transition: background 0.5s ease;
-        }
-        
-        .app-header {
-            position: absolute;
-            top: 20px;
-            left: 0;
-            right: 0;
+            padding: 20px;
             text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
         
         .app-title {
@@ -66,629 +47,431 @@
             font-weight: 700;
             color: #5e72e4;
             text-shadow: 0 2px 4px rgba(94, 114, 228, 0.2);
-            transition: color 0.5s ease;
+            margin-bottom: 10px;
         }
         
-        .random-number {
-            font-size: 96px;
-            font-weight: 800;
-            color: #5e72e4;
-            margin: 20px 0;
-            text-shadow: 0 4px 10px rgba(94, 114, 228, 0.2);
-            transition: all 0.3s ease;
-            position: relative;
-            z-index: 2;
-        }
-        
-        .animate-number {
-            animation: pulse 0.5s ease;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(0.8); opacity: 0.5; }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        
-        .range-display {
-            background: rgba(94, 114, 228, 0.1);
-            padding: 12px 24px;
-            border-radius: 50px;
-            margin-top: 20px;
-            font-size: 16px;
-            color: #5e72e4;
-            font-weight: 500;
-            display: flex;
-            gap: 10px;
-            position: relative;
-            z-index: 2;
-            backdrop-filter: blur(5px);
-            transition: all 0.5s ease;
-        }
-        
-        .instruction {
-            position: absolute;
-            bottom: 40px;
-            left: 0;
-            right: 0;
-            text-align: center;
-            color: #888;
-            font-size: 15px;
-            padding: 0 20px;
-            z-index: 2;
-            transition: color 0.5s ease;
-        }
-        
-        .settings-panel {
-            position: fixed;
-            bottom: -60%;
-            left: 0;
-            right: 0;
-            height: 60%;
-            background: white;
-            border-radius: 24px 24px 0 0;
-            padding: 25px 20px 20px;
-            box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.15);
-            transition: bottom 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-            z-index: 20;
-            overflow-y: auto;
-            transition: background 0.5s ease;
-        }
-        
-        .settings-panel.show {
-            bottom: 0;
-        }
-        
-        .settings-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
-            transition: border-color 0.5s ease;
-        }
-        
-        .settings-header h2 {
-            font-size: 22px;
-            font-weight: 700;
-            color: #5e72e4;
-            transition: color 0.5s ease;
-        }
-        
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 18px;
-            color: #007AFF;
-            font-weight: 500;
-            padding: 8px 16px;
-            cursor: pointer;
-            transition: color 0.5s ease;
-        }
-        
-        .input-group {
-            margin-bottom: 20px;
-        }
-        
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #333;
-            font-size: 16px;
-            transition: color 0.5s ease;
-        }
-        
-        .input-group input {
-            width: 100%;
-            padding: 16px;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            font-size: 18px;
-            outline: none;
-            transition: border-color 0.3s, background 0.5s ease;
-            background: #f8f9ff;
-        }
-        
-        .input-group input:focus {
-            border-color: #5e72e4;
-            box-shadow: 0 0 0 2px rgba(94, 114, 228, 0.2);
-        }
-        
-        .save-btn {
+        .back-button {
             background: linear-gradient(to right, #5e72e4, #825ee4);
             color: white;
             border: none;
+            border-radius: 50px;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            box-shadow: 0 4px 10px rgba(94, 114, 228, 0.3);
+        }
+        
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(94, 114, 228, 0.4);
+        }
+        
+        .back-button:active {
+            transform: translateY(1px);
+        }
+        
+        .guide-container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+        
+        .guide-content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            padding: 40px 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .guide-title {
+            font-size: 32px;
+            text-align: center;
+            color: #5e72e4;
+            margin-bottom: 10px;
+        }
+        
+        .guide-subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 18px;
+            margin-bottom: 40px;
+        }
+        
+        .guide-steps {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .guide-step {
+            flex: 1;
+            min-width: 250px;
+            max-width: 350px;
+            background: rgba(94, 114, 228, 0.05);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            transition: transform 0.3s;
+            border: 2px solid rgba(94, 114, 228, 0.1);
+        }
+        
+        .guide-step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(94, 114, 228, 0.1);
+            border-color: rgba(94, 114, 228, 0.2);
+        }
+        
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: #5e72e4;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .step-title {
+            font-size: 22px;
+            color: #5e72e4;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .step-text {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 20px;
+        }
+        
+        .step-icon {
+            font-size: 48px;
+            color: #5e72e4;
+            margin: 15px 0;
+        }
+        
+        .screenshot {
+            width: 100%;
+            max-width: 300px;
+            margin: 20px auto;
             border-radius: 12px;
-            padding: 18px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid #eee;
+        }
+        
+        .screenshot img {
+            width: 100%;
+            display: block;
+        }
+        
+        .benefits-section {
+            background: rgba(94, 114, 228, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 50px 0;
+            border: 2px solid rgba(94, 114, 228, 0.1);
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 28px;
+            color: #5e72e4;
+            margin-bottom: 30px;
+        }
+        
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .benefit-item {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .benefit-icon {
+            font-size: 36px;
+            color: #5e72e4;
+            margin-bottom: 15px;
+        }
+        
+        .benefit-title {
+            font-size: 18px;
+            color: #5e72e4;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .benefit-text {
+            font-size: 15px;
+            color: #666;
+        }
+        
+        .footer {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px 20px;
+            text-align: center;
+            margin-top: 50px;
+            border-top: 1px solid #eee;
+        }
+        
+        .footer-title {
+            font-size: 24px;
+            color: #5e72e4;
+            margin-bottom: 20px;
+        }
+        
+        .footer-text {
+            font-size: 16px;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto 25px;
+            line-height: 1.6;
+        }
+        
+        .random-generator-link {
+            display: inline-block;
+            background: linear-gradient(to right, #5e72e4, #825ee4);
+            color: white;
+            text-decoration: none;
+            padding: 14px 35px;
+            border-radius: 50px;
             font-size: 18px;
             font-weight: 600;
-            width: 100%;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s, background 0.5s ease;
+            margin-top: 15px;
+            transition: all 0.3s;
             box-shadow: 0 4px 15px rgba(94, 114, 228, 0.3);
         }
         
-        .save-btn:active {
-            transform: translateY(2px);
-            box-shadow: 0 2px 8px rgba(94, 114, 228, 0.3);
+        .random-generator-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(94, 114, 228, 0.4);
         }
         
-        .panel-overlay {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 100%;
-            background: rgba(0, 0, 0, 0);
-            transition: background 0.4s ease;
-            z-index: 15;
-            pointer-events: none;
+        .random-generator-link:active {
+            transform: translateY(1px);
         }
         
-        .panel-overlay.show {
-            background: rgba(0, 0, 0, 0.4);
-            pointer-events: auto;
-        }
-        
-        .notification {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-100px);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 12px;
-            font-size: 16px;
-            z-index: 200;
-            transition: transform 0.4s ease;
-            backdrop-filter: blur(10px);
-        }
-        
-        .notification.show {
-            transform: translateX(-50%) translateY(0);
-        }
-        
-        .add-to-home {
-            text-align: center;
-            color: #888;
-            font-size: 14px;
-            margin-top: 15px;
-            padding: 10px;
-            border-top: 1px solid #eee;
-            transition: color 0.5s ease, border-color 0.5s ease;
-        }
-        
-        /* ************** 暗黑模式样式 ************** */
-        body.dark-mode {
-            background: linear-gradient(135deg, #4a00e0, #8e2de2);
-        }
-        
-        .dark-mode .main-content {
-            background: rgba(30, 30, 46, 0.95);
-        }
-        
-        .dark-mode .app-title,
-        .dark-mode .random-number {
-            color: #a6b0ff;
-            text-shadow: 0 2px 4px rgba(166, 176, 255, 0.2);
-        }
-        
-        .dark-mode .range-display {
-            background: rgba(166, 176, 255, 0.1);
-            color: #a6b0ff;
-        }
-        
-        .dark-mode .instruction {
-            color: #aaa;
-        }
-        
-        .dark-mode .settings-panel {
-            background: #1e1e2e;
-        }
-        
-        .dark-mode .settings-header {
-            border-bottom: 1px solid #333;
-        }
-        
-        .dark-mode .settings-header h2 {
-            color: #a6b0ff;
-        }
-        
-        .dark-mode .close-btn {
-            color: #a6b0ff;
-        }
-        
-        .dark-mode .input-group label {
-            color: #ddd;
-        }
-        
-        .dark-mode .input-group input {
-            background: #252536;
-            border-color: #444;
-            color: #fff;
-        }
-        
-        .dark-mode .save-btn {
-            background: linear-gradient(to right, #a6b0ff, #b197fc);
-        }
-        
-        .dark-mode .add-to-home {
-            color: #aaa;
-            border-top: 1px solid #333;
-        }
-        
-        /* ************** PWA安装提示 ************** */
-        .pwa-install-prompt {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 16px;
+        /* 浏览器限制提示 */
+        .browser-warning {
+            background: #fff3cd;
+            border: 1px solid #ffecb5;
+            border-radius: 8px;
             padding: 15px;
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            max-width: 90%;
-            transition: opacity 0.3s ease;
-            backdrop-filter: blur(10px);
+            margin: 20px 0;
+            text-align: center;
+            display: none;
         }
         
-        .dark-mode .pwa-install-prompt {
-            background: rgba(30, 30, 46, 0.95);
+        .browser-warning.show {
+            display: block;
         }
         
-        .pwa-install-prompt p {
+        .warning-icon {
+            color: #856404;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .warning-text {
+            color: #856404;
             font-size: 14px;
-            color: #333;
-            margin: 0;
+            line-height: 1.5;
         }
         
-        .dark-mode .pwa-install-prompt p {
-            color: #ddd;
-        }
-        
-        .pwa-install-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .pwa-install-btn {
-            background: #5e72e4;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 15px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        
-        .pwa-install-btn:hover {
-            background: #4a5bd0;
-        }
-        
-        .pwa-dismiss-btn {
-            background: transparent;
-            color: #888;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 8px 15px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .dark-mode .pwa-dismiss-btn {
-            border-color: #555;
-            color: #aaa;
-        }
-        
-        .pwa-dismiss-btn:hover {
-            background: #f5f5f5;
-        }
-        
-        .dark-mode .pwa-dismiss-btn:hover {
-            background: #252536;
-        }
-        
-        @media (max-height: 700px) {
-            .random-number {
-                font-size: 80px;
+        @media (max-width: 768px) {
+            .guide-content {
+                padding: 30px 20px;
             }
-            .settings-panel {
-                height: 70%;
-                bottom: -70%;
+            
+            .guide-title {
+                font-size: 28px;
             }
-        }
-        
-        /* ************** 全屏模式调整 ************** */
-        @media all and (display-mode: standalone) {
-            body {
-                overflow: hidden;
+            
+            .guide-step {
+                min-width: 100%;
             }
-            .app-header {
-                top: 40px;
-            }
-            .instruction {
-                bottom: 60px;
+            
+            .benefits-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="app-header">
-            <!-- ************** 应用名称 ************** -->
-            <div class="app-title">NumberGen</div>
-        </div>
-        
-        <div class="main-content">
-            <div class="random-number" id="randomNumber">42</div>
-            <div class="range-display">
-                <span>范围：</span>
-                <span id="minValue">1</span>
-                <span>-</span>
-                <span id="maxValue">100</span>
+    <div class="header">
+        <h1 class="app-title">添加到主屏幕教程</h1>
+        <button class="back-button" id="backButton">
+            <i class="fas fa-arrow-left"></i> 返回随机数生成器
+        </button>
+    </div>
+    
+    <div class="guide-container">
+        <div class="guide-content">
+            <h2 class="guide-title">将随机数生成器添加到主屏幕</h2>
+            <p class="guide-subtitle">按照以下简单步骤将应用添加到手机主屏幕，享受原生应用体验</p>
+            
+            <!-- 浏览器限制提示 -->
+            <div class="browser-warning" id="browserWarning">
+                <div class="warning-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <p class="warning-text">注意：当前浏览器可能限制关闭窗口功能。如果点击返回按钮无法关闭页面，请手动关闭此标签页。</p>
             </div>
             
-            <div class="instruction">
-                <i class="fas fa-hand-pointer"></i> 点击屏幕刷新 • <i class="fas fa-arrow-up"></i> 上滑打开设置
-            </div>
-        </div>
-        
-        <div class="panel-overlay" id="panelOverlay"></div>
-        
-        <div class="settings-panel" id="settingsPanel">
-            <div class="settings-header">
-                <!-- ************** 设置面板标题 ************** -->
-                <h2><i class="fas fa-sliders-h"></i> 设置范围</h2>
-                <button class="close-btn" id="closeSettings">完成</button>
+            <div class="guide-steps">
+                <div class="guide-step">
+                    <div class="step-number">1</div>
+                    <div class="step-icon">
+                        <i class="fas fa-browser"></i>
+                    </div>
+                    <h3 class="step-title">打开应用</h3>
+                    <p class="step-text">在您的手机浏览器中打开随机数生成器应用</p>
+                </div>
+                
+                <div class="guide-step">
+                    <div class="step-number">2</div>
+                    <div class="step-icon">
+                        <i class="fas fa-share-alt"></i>
+                    </div>
+                    <h3 class="step-title">点击分享按钮</h3>
+                    <p class="step-text">在浏览器菜单中找到并点击分享按钮</p>
+                    <div class="screenshot">
+                        <div style="background: #f0f0f0; height: 180px; display: flex; align-items: center; justify-content: center; color: #5e72e4;">
+                            <i class="fas fa-share-alt" style="font-size: 80px;"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="guide-step">
+                    <div class="step-number">3</div>
+                    <div class="step-icon">
+                        <i class="fas fa-plus-square"></i>
+                    </div>
+                    <h3 class="step-title">选择"添加到主屏幕"</h3>
+                    <p class="step-text">在分享菜单中选择"添加到主屏幕"选项</p>
+                    <div class="screenshot">
+                        <div style="background: #f0f0f0; height: 180px; display: flex; align-items: center; justify-content: center; color: #5e72e4;">
+                            <i class="fas fa-plus-square" style="font-size: 80px;"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="guide-step">
+                    <div class="step-number">4</div>
+                    <div class="step-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3 class="step-title">确认添加</h3>
+                    <p class="step-text">确认名称并点击"添加"按钮完成操作</p>
+                    <div class="screenshot">
+                        <div style="background: #f0f0f0; height: 180px; display: flex; align-items: center; justify-content: center; color: #5e72e4;">
+                            <i class="fas fa-check-circle" style="font-size: 80px;"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
             
-            <div class="input-group">
-                <label for="minInput"><i class="fas fa-arrow-down"></i> 最小值</label>
-                <input type="number" id="minInput" value="1">
-            </div>
-            
-            <div class="input-group">
-                <label for="maxInput"><i class="fas fa-arrow-up"></i> 最大值</label>
-                <input type="number" id="maxInput" value="100">
-            </div>
-            
-            <button class="save-btn" id="saveSettings">
-                <i class="fas fa-save"></i> 保存设置
-            </button>
-            
-            <div class="add-to-home">
-                <i class="fas fa-mobile-alt"></i> 可<a href="add_to_home_guide.html"  target="_blank">添加到主屏幕</a>使用
+            <div class="benefits-section">
+                <h3 class="section-title">添加到主屏幕的好处</h3>
+                <div class="benefits-grid">
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <h4 class="benefit-title">快速访问</h4>
+                        <p class="benefit-text">直接从主屏幕打开应用，无需打开浏览器</p>
+                    </div>
+                    
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h4 class="benefit-title">全屏体验</h4>
+                        <p class="benefit-text">享受无浏览器界面的沉浸式体验</p>
+                    </div>
+                    
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h4 class="benefit-title">更快性能</h4>
+                        <p class="benefit-text">应用加载更快，响应更迅速</p>
+                    </div>
+                    
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <i class="fas fa-sync-alt"></i>
+                        </div>
+                        <h4 class="benefit-title">离线使用</h4>
+                        <p class="benefit-text">部分功能可在离线状态下使用</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     
-    <div class="notification" id="notification">设置已保存</div>
-    
-    <!-- ************** PWA安装提示 ************** -->
-    <div class="pwa-install-prompt" id="installPrompt" style="display: none;">
-        <p>添加到主屏幕，获得更好的使用体验</p>
-        <div class="pwa-install-buttons">
-            <button class="pwa-install-btn" id="installBtn">添加</button>
-            <button class="pwa-dismiss-btn" id="dismissBtn">取消</button>
-        </div>
+    <div class="footer">
+        <h3 class="footer-title">开始使用随机数生成器</h3>
+        <p class="footer-text">随机数生成器是一个简单易用的工具，可帮助您生成指定范围内的随机数。非常适合抽奖、游戏、决策等多种场景。</p>
+        <a href="random_number_generator.html" class="random-generator-link">
+            <i class="fas fa-dice"></i> 打开随机数生成器
+        </a>
     </div>
     
     <script>
-        // 当前设置
-        let minValue = 1;
-        let maxValue = 100;
-        let deferredPrompt;
-
-	// 新增：触摸状态跟踪变量
-        let touchStartY = 0;
-        let touchEndY = 0;
-        let isSwiping = false;
+        // 获取返回按钮
+        const backButton = document.getElementById('backButton');
+        const browserWarning = document.getElementById('browserWarning');
         
-        // DOM元素
-        const randomNumberEl = document.getElementById('randomNumber');
-        const minValueEl = document.getElementById('minValue');
-        const maxValueEl = document.getElementById('maxValue');
-        const settingsPanel = document.getElementById('settingsPanel');
-        const panelOverlay = document.getElementById('panelOverlay');
-        const closeSettingsBtn = document.getElementById('closeSettings');
-        const saveSettingsBtn = document.getElementById('saveSettings');
-        const minInput = document.getElementById('minInput');
-        const maxInput = document.getElementById('maxInput');
-        const notification = document.getElementById('notification');
-        const installPrompt = document.getElementById('installPrompt');
-        const installBtn = document.getElementById('installBtn');
-        const dismissBtn = document.getElementById('dismissBtn');
-        
-        // 生成随机数
-        function generateRandomNumber() {
-            // 添加动画效果
-            randomNumberEl.classList.remove('animate-number');
-            void randomNumberEl.offsetWidth; // 触发重排
-            randomNumberEl.classList.add('animate-number');
-            
-            // 生成并显示随机数
-            const randomNum = Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue;
-            randomNumberEl.textContent = randomNum;
-        }
-        
-        // 更新范围显示
-        function updateRangeDisplay() {
-            minValueEl.textContent = minValue;
-            maxValueEl.textContent = maxValue;
-        }
-        
-        // 暗黑模式检测
-        function checkDarkMode() {
-            const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            document.body.classList.toggle('dark-mode', isDarkMode);
-            
-            // 更新主题颜色
-            const themeColor = isDarkMode ? "#1e1e2e" : "#6e8efb";
-            document.querySelector('meta[name="theme-color"]').setAttribute('content', themeColor);
-        }
-        
-        // 初始化页面（重写事件处理逻辑）
-        function init() {
-            generateRandomNumber();
-            updateRangeDisplay();
-            checkDarkMode();
-
-            // 监听暗黑模式变化
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', checkDarkMode);
-            
-            // iOS 13兼容的点击事件处理
-            document.body.addEventListener('touchend', function(e) {
-                // 只有在没有滑动时才触发点击
-                if (!isSwiping && !settingsPanel.classList.contains('show')) {
-                    generateRandomNumber();
-                }
-                isSwiping = false;
-            });
-            
-            // 改进的触摸事件处理 - iOS 13兼容
-            document.body.addEventListener('touchstart', function(e) {
-                touchStartY = e.touches[0].clientY;
-                isSwiping = false;
-            });
-            
-            document.body.addEventListener('touchmove', function(e) {
-                const touchY = e.touches[0].clientY;
-                const diffY = touchStartY - touchY;
+        // 返回按钮点击事件
+        backButton.addEventListener('click', function() {
+            try {
+                // 尝试关闭当前窗口
+                window.close();
                 
-                // 检测到向上滑动（diffY > 0 表示向上）
-                if (diffY > 30 && !isSwiping && !settingsPanel.classList.contains('show')) {
-                    isSwiping = true;
-                    openSettings();
-                }
-            });
-            
-            // 设置面板相关事件
-            closeSettingsBtn.addEventListener('click', closeSettings);
-            saveSettingsBtn.addEventListener('click', saveSettings);
-            panelOverlay.addEventListener('click', closeSettings);
-            
-            // PWA安装提示事件
-            installBtn.addEventListener('click', installPWA);
-            dismissBtn.addEventListener('click', dismissInstallPrompt);
-            
-            // 监听PWA安装事件
-            window.addEventListener('beforeinstallprompt', (e) => {
-                // 防止Chrome自动显示安装提示
-                e.preventDefault();
-                deferredPrompt = e;
-                
-                // 显示自定义安装提示
-                setTimeout(() => {
-                    installPrompt.style.display = 'flex';
-                }, 3000);
-            });
-
-            // iOS全屏模式特殊处理
-            if (window.navigator.standalone) {
-                // 修复iOS全屏模式下的滚动问题
-                document.documentElement.style.overscrollBehavior = 'none';
-                
-                // 修复iOS全屏模式下的点击区域问题
-                document.querySelector('.app-header').style.top = '30px';
-                document.querySelector('.instruction').style.bottom = '50px';
-            }
-        
-        }
-        
-        // 打开设置面板
-        function openSettings() {
-            minInput.value = minValue;
-            maxInput.value = maxValue;
-            settingsPanel.classList.add('show');
-            panelOverlay.classList.add('show');
-        }
-        
-        // 关闭设置面板
-        function closeSettings() {
-            settingsPanel.classList.remove('show');
-            panelOverlay.classList.remove('show');
-        }
-        
-        // 保存设置
-        function saveSettings() {
-            let newMin = parseInt(minInput.value);
-            let newMax = parseInt(maxInput.value);
-            
-            // 验证输入
-            if (isNaN(newMin) || isNaN(newMax)) {
-                showNotification('请输入有效数字');
-                return;
-            }
-            
-            if (newMin >= newMax) {
-                showNotification('最小值必须小于最大值');
-                return;
-            }
-            
-            if (newMax - newMin > 1000000) {
-                showNotification('范围过大，请减小差值');
-                return;
-            }
-            
-            // 更新设置
-            minValue = newMin;
-            maxValue = newMax;
-            
-            // 更新显示
-            updateRangeDisplay();
-            
-            // 重新生成随机数
-            generateRandomNumber();
-            
-            // 关闭面板
-            closeSettings();
-            
-            // 显示成功通知
-            showNotification('设置已保存');
-        }
-        
-        // 显示通知
-        function showNotification(message) {
-            notification.textContent = message;
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 2000);
-        }
-        
-        // 安装PWA
-        function installPWA() {
-            installPrompt.style.display = 'none';
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        console.log('用户接受安装');
+                // 如果关闭失败（某些浏览器会阻止关闭），显示提示信息
+                setTimeout(function() {
+                    if (!window.closed) {
+                        browserWarning.classList.add('show');
                     }
-                    deferredPrompt = null;
-                });
+                }, 100);
+            } catch (e) {
+                // 捕获异常并显示提示
+                browserWarning.classList.add('show');
             }
-        }
+        });
         
-        // 关闭安装提示
-        function dismissInstallPrompt() {
-            installPrompt.style.display = 'none';
-        }
+        // 在iOS WebView中无法关闭窗口的额外处理
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isStandalone = window.navigator.standalone;
         
-        // 初始化应用
-        init();
+        if (isIOS && isStandalone) {
+            browserWarning.innerHTML = `
+                <div class="warning-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <p class="warning-text">在iOS主屏幕应用中，无法直接关闭页面。请按Home键返回主屏幕。</p>
+            `;
+        }
     </script>
 </body>
 </html>
