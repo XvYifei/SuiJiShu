@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#6e8efb">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <!-- ************** 应用名称 ************** -->
-    <title>随机数生成器</title>
+    <title>随机数生成</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -427,7 +427,7 @@
     <div class="container">
         <div class="app-header">
             <!-- ************** 应用名称 ************** -->
-            <div class="app-title">随机数生成器</div>
+            <div class="app-title">NumberGen</div>
         </div>
         
         <div class="main-content">
@@ -468,7 +468,7 @@
             </button>
             
             <div class="add-to-home">
-                <i class="fas fa-mobile-alt"></i> 可添加到主屏幕使用
+                <i class="fas fa-mobile-alt"></i> 可<a href="add_to_home_guide.html"  target="_blank">添加到主屏幕</a>使用
             </div>
         </div>
     </div>
@@ -489,6 +489,11 @@
         let minValue = 1;
         let maxValue = 100;
         let deferredPrompt;
+
+	// 新增：触摸状态跟踪变量
+        let touchStartY = 0;
+        let touchEndY = 0;
+        let isSwiping = false;
         
         // DOM元素
         const randomNumberEl = document.getElementById('randomNumber');
@@ -533,40 +538,38 @@
             document.querySelector('meta[name="theme-color"]').setAttribute('content', themeColor);
         }
         
-        // 初始化页面
+        // 初始化页面（重写事件处理逻辑）
         function init() {
             generateRandomNumber();
             updateRangeDisplay();
             checkDarkMode();
-            
+
             // 监听暗黑模式变化
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', checkDarkMode);
             
-            // 点击事件：生成新随机数
-            document.body.addEventListener('click', function(e) {
-                // 只有当设置面板未显示时才生成随机数
-                if (!settingsPanel.classList.contains('show')) {
+            // iOS 13兼容的点击事件处理
+            document.body.addEventListener('touchend', function(e) {
+                // 只有在没有滑动时才触发点击
+                if (!isSwiping && !settingsPanel.classList.contains('show')) {
                     generateRandomNumber();
                 }
+                isSwiping = false;
             });
             
-            // 触摸滑动事件
-            let startY = 0;
-            let isScrolling = false;
-            
+            // 改进的触摸事件处理 - iOS 13兼容
             document.body.addEventListener('touchstart', function(e) {
-                startY = e.touches[0].clientY;
-                isScrolling = false;
+                touchStartY = e.touches[0].clientY;
+                isSwiping = false;
             });
             
             document.body.addEventListener('touchmove', function(e) {
-                const currentY = e.touches[0].clientY;
-                const diffY = startY - currentY;
+                const touchY = e.touches[0].clientY;
+                const diffY = touchStartY - touchY;
                 
-                // 检测到向上滑动
-                if (diffY > 30 && !isScrolling && !settingsPanel.classList.contains('show')) {
+                // 检测到向上滑动（diffY > 0 表示向上）
+                if (diffY > 30 && !isSwiping && !settingsPanel.classList.contains('show')) {
+                    isSwiping = true;
                     openSettings();
-                    isScrolling = true;
                 }
             });
             
@@ -590,6 +593,17 @@
                     installPrompt.style.display = 'flex';
                 }, 3000);
             });
+
+            // iOS全屏模式特殊处理
+            if (window.navigator.standalone) {
+                // 修复iOS全屏模式下的滚动问题
+                document.documentElement.style.overscrollBehavior = 'none';
+                
+                // 修复iOS全屏模式下的点击区域问题
+                document.querySelector('.app-header').style.top = '30px';
+                document.querySelector('.instruction').style.bottom = '50px';
+            }
+        
         }
         
         // 打开设置面板
