@@ -366,30 +366,7 @@
             maxValueEl.textContent = maxValue;
         }
         
-        // 创建手势反馈元素
-        function createFeedbackElement(text, x, y, isClick) {
-            const feedback = document.createElement('div');
-            feedback.className = `gesture-feedback ${isClick ? 'click-feedback' : 'swipe-feedback'}`;
-            feedback.textContent = text;
-            feedback.style.left = `${x}px`;
-            feedback.style.top = `${y}px`;
-            
-            document.body.appendChild(feedback);
-            
-            // 显示反馈
-            setTimeout(() => {
-                feedback.style.opacity = '1';
-                feedback.style.transform = 'translateY(-80px)';
-            }, 10);
-            
-            // 移除元素
-            setTimeout(() => {
-                feedback.style.opacity = '0';
-                setTimeout(() => {
-                    document.body.removeChild(feedback);
-                }, 300);
-            }, 1000);
-        }
+        
         
         // 初始化页面
         function init() {
@@ -409,7 +386,7 @@
                 // 检测到向上滑动（diffY > 0 表示向上）
                 if (diffY > 30 && !isSwiping && !settingsPanel.classList.contains('show')) {
                     isSwiping = true;
-                    createFeedbackElement('上滑', e.touches[0].clientX, e.touches[0].clientY, false);
+                    
                     openSettings();
                 }
             });
@@ -427,7 +404,7 @@
                 
                 // 点击手势
                 if (!isSwiping && !isSwipe && !settingsPanel.classList.contains('show')) {
-                    createFeedbackElement('点击', x, y, true);
+                    
                     generateRandomNumber();
                 }
                 isSwiping = false;
@@ -506,7 +483,7 @@
             
             setTimeout(() => {
                 notification.classList.remove('show');
-            }, 2000);
+            }, 1000);
         }
         
         // 初始化应用
