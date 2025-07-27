@@ -2,12 +2,14 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <!-- ************** PWA全屏模式设置 ************** -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-        <meta name="theme-color" content="#6e8efb">
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-    <title>随机数生成器</title>
+    <meta name="theme-color" content="#6e8efb">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <!-- ************** 应用名称 ************** -->
+    <title>RandNumber</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -26,7 +28,7 @@
             flex-direction: column;
             color: #333;
             position: relative;
-            touch-action: none;
+            transition: background 0.5s ease;
         }
         
         .container {
@@ -48,6 +50,7 @@
             position: relative;
             z-index: 1;
             background: rgba(255, 255, 255, 0.95);
+            transition: background 0.5s ease;
         }
         
         .app-header {
@@ -63,6 +66,7 @@
             font-weight: 700;
             color: #5e72e4;
             text-shadow: 0 2px 4px rgba(94, 114, 228, 0.2);
+            transition: color 0.5s ease;
         }
         
         .random-number {
@@ -71,6 +75,7 @@
             color: #5e72e4;
             margin: 20px 0;
             text-shadow: 0 4px 10px rgba(94, 114, 228, 0.2);
+            transition: all 0.3s ease;
             position: relative;
             z-index: 2;
         }
@@ -98,6 +103,7 @@
             position: relative;
             z-index: 2;
             backdrop-filter: blur(5px);
+            transition: all 0.5s ease;
         }
         
         .instruction {
@@ -110,6 +116,7 @@
             font-size: 15px;
             padding: 0 20px;
             z-index: 2;
+            transition: color 0.5s ease;
         }
         
         .settings-panel {
@@ -125,6 +132,7 @@
             transition: bottom 0.4s cubic-bezier(0.22, 1, 0.36, 1);
             z-index: 20;
             overflow-y: auto;
+            transition: background 0.5s ease;
         }
         
         .settings-panel.show {
@@ -138,12 +146,14 @@
             margin-bottom: 20px;
             padding-bottom: 15px;
             border-bottom: 1px solid #eee;
+            transition: border-color 0.5s ease;
         }
         
         .settings-header h2 {
             font-size: 22px;
             font-weight: 700;
             color: #5e72e4;
+            transition: color 0.5s ease;
         }
         
         .close-btn {
@@ -154,6 +164,7 @@
             font-weight: 500;
             padding: 8px 16px;
             cursor: pointer;
+            transition: color 0.5s ease;
         }
         
         .input-group {
@@ -166,6 +177,7 @@
             font-weight: 500;
             color: #333;
             font-size: 16px;
+            transition: color 0.5s ease;
         }
         
         .input-group input {
@@ -175,6 +187,7 @@
             border-radius: 12px;
             font-size: 18px;
             outline: none;
+            transition: border-color 0.3s, background 0.5s ease;
             background: #f8f9ff;
         }
         
@@ -193,6 +206,7 @@
             font-weight: 600;
             width: 100%;
             cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, background 0.5s ease;
             box-shadow: 0 4px 15px rgba(94, 114, 228, 0.3);
         }
         
@@ -237,25 +251,76 @@
             transform: translateX(-50%) translateY(0);
         }
         
-        .gesture-feedback {
-            position: absolute;
-            font-size: 36px;
-            font-weight: bold;
-            color: #fff;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
-            opacity: 0;
-            pointer-events: none;
-            z-index: 100;
-            transition: opacity 0.3s, transform 0.8s;
-            transform: translateY(0);
+        .add-to-home {
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+            margin-top: 15px;
+            padding: 10px;
+            border-top: 1px solid #eee;
+            transition: color 0.5s ease, border-color 0.5s ease;
         }
         
-        .click-feedback {
-            color: #4CAF50;
+        /* ************** PWA安装提示 ************** */
+        .pwa-install-prompt {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            max-width: 90%;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(10px);
         }
         
-        .swipe-feedback {
-            color: #2196F3;
+        .pwa-install-prompt p {
+            font-size: 14px;
+            color: #333;
+            margin: 0;
+        }
+        
+        .pwa-install-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .pwa-install-btn {
+            background: #5e72e4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .pwa-install-btn:hover {
+            background: #4a5bd0;
+        }
+        
+        .pwa-dismiss-btn {
+            background: transparent;
+            color: #888;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .pwa-dismiss-btn:hover {
+            background: #f5f5f5;
         }
         
         @media (max-height: 700px) {
@@ -268,6 +333,7 @@
             }
         }
         
+        /* ************** 全屏模式调整 ************** */
         @media all and (display-mode: standalone) {
             body {
                 overflow: hidden;
@@ -284,7 +350,8 @@
 <body>
     <div class="container">
         <div class="app-header">
-            <div class="app-title">随机数生成器</div>
+            <!-- ************** 应用名称 ************** -->
+            <div class="app-title">RandNumber</div>
         </div>
         
         <div class="main-content">
@@ -305,6 +372,7 @@
         
         <div class="settings-panel" id="settingsPanel">
             <div class="settings-header">
+                <!-- ************** 设置面板标题 ************** -->
                 <h2><i class="fas fa-sliders-h"></i> 设置范围</h2>
                 <button class="close-btn" id="closeSettings">完成</button>
             </div>
@@ -322,20 +390,30 @@
             <button class="save-btn" id="saveSettings">
                 <i class="fas fa-save"></i> 保存设置
             </button>
+            
+            <!-- 新增添加到主屏幕提示 -->
+            <div class="add-to-home">
+                <i class="fas fa-mobile-alt"></i> 可<a href="/add_to_home_guide.html" target="_blank">添加到主屏幕</a>使用
+            </div>
         </div>
     </div>
     
     <div class="notification" id="notification">设置已保存</div>
     
+    <!-- ************** PWA安装提示 ************** -->
+    <div class="pwa-install-prompt" id="installPrompt" style="display: none;">
+        <p>添加到主屏幕，获得更好的使用体验</p>
+        <div class="pwa-install-buttons">
+            <button class="pwa-install-btn" id="installBtn">添加</button>
+            <button class="pwa-dismiss-btn" id="dismissBtn">取消</button>
+        </div>
+    </div>
+    
     <script>
         // 当前设置
         let minValue = 1;
         let maxValue = 100;
-        
-        // 触摸状态跟踪变量
-        let touchStartY = 0;
-        let touchEndY = 0;
-        let isSwiping = false;
+        let deferredPrompt;
         
         // DOM元素
         const randomNumberEl = document.getElementById('randomNumber');
@@ -348,7 +426,9 @@
         const minInput = document.getElementById('minInput');
         const maxInput = document.getElementById('maxInput');
         const notification = document.getElementById('notification');
-        const body = document.body;
+        const installPrompt = document.getElementById('installPrompt');
+        const installBtn = document.getElementById('installBtn');
+        const dismissBtn = document.getElementById('dismissBtn');
         
         // 生成随机数
         function generateRandomNumber() {
@@ -368,55 +448,36 @@
             maxValueEl.textContent = maxValue;
         }
         
-        
-        
         // 初始化页面
         function init() {
             generateRandomNumber();
             updateRangeDisplay();
             
-            // 触摸事件处理
+            // 点击事件：生成新随机数
+            document.body.addEventListener('click', function(e) {
+                // 只有当设置面板未显示时才生成随机数
+                if (!settingsPanel.classList.contains('show')) {
+                    generateRandomNumber();
+                }
+            });
+            
+            // 触摸滑动事件
+            let startY = 0;
+            let isScrolling = false;
+            
             document.body.addEventListener('touchstart', function(e) {
-                touchStartY = e.touches[0].clientY;
-                isSwiping = false;
+                startY = e.touches[0].clientY;
+                isScrolling = false;
             });
             
             document.body.addEventListener('touchmove', function(e) {
-                const touchY = e.touches[0].clientY;
-                const diffY = touchStartY - touchY;
+                const currentY = e.touches[0].clientY;
+                const diffY = startY - currentY;
                 
-                // 检测到向上滑动（diffY > 0 表示向上）
-                if (diffY > 30 && !isSwiping && !settingsPanel.classList.contains('show')) {
-                    isSwiping = true;
-                    
+                // 检测到向上滑动
+                if (diffY > 30 && !isScrolling && !settingsPanel.classList.contains('show')) {
                     openSettings();
-                }
-            });
-            
-            document.body.addEventListener('touchend', function(e) {
-                const touchEndY = e.changedTouches[0].clientY;
-                const touchEndTime = new Date().getTime();
-                
-                // 计算滑动距离
-                const distanceY = touchEndY - touchStartY;
-                const isSwipe = Math.abs(distanceY) > 10;
-                
-                const x = e.changedTouches[0].clientX;
-                const y = e.changedTouches[0].clientY;
-                
-                // 点击手势
-                if (!isSwiping && !isSwipe && !settingsPanel.classList.contains('show')) {
-                    
-                    generateRandomNumber();
-                }
-                isSwiping = false;
-            });
-            
-            // 鼠标点击事件（用于桌面测试）
-            document.body.addEventListener('click', function(e) {
-                if (!settingsPanel.classList.contains('show')) {
-                    createFeedbackElement('点击', e.clientX, e.clientY, true);
-                    generateRandomNumber();
+                    isScrolling = true;
                 }
             });
             
@@ -424,6 +485,22 @@
             closeSettingsBtn.addEventListener('click', closeSettings);
             saveSettingsBtn.addEventListener('click', saveSettings);
             panelOverlay.addEventListener('click', closeSettings);
+            
+            // PWA安装提示事件
+            installBtn.addEventListener('click', installPWA);
+            dismissBtn.addEventListener('click', dismissInstallPrompt);
+            
+            // 监听PWA安装事件
+            window.addEventListener('beforeinstallprompt', (e) => {
+                // 防止Chrome自动显示安装提示
+                e.preventDefault();
+                deferredPrompt = e;
+                
+                // 显示自定义安装提示
+                setTimeout(() => {
+                    installPrompt.style.display = 'flex';
+                }, 3000);
+            });
         }
         
         // 打开设置面板
@@ -485,7 +562,26 @@
             
             setTimeout(() => {
                 notification.classList.remove('show');
-            }, 1000);
+            }, 2000);
+        }
+        
+        // 安装PWA
+        function installPWA() {
+            installPrompt.style.display = 'none';
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('用户接受安装');
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        }
+        
+        // 关闭安装提示
+        function dismissInstallPrompt() {
+            installPrompt.style.display = 'none';
         }
         
         // 初始化应用
