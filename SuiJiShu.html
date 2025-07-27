@@ -1,18 +1,17 @@
 <!DOCTYPE html>
-
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover, user-scalable=no" name="viewport"/>
-<!-- ************** PWA全屏模式设置 ************** -->
-<meta content="yes" name="apple-mobile-web-app-capable"/>
-<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
-<meta content="#6e8efb" name="theme-color"/>
-<link href="/apple-touch-icon.png" rel="apple-touch-icon"/>
-<!-- ************** 应用名称 ************** -->
-<title>RandNumber</title>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
-<style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <!-- ************** PWA全屏模式设置 ************** -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#6e8efb">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <!-- ************** 应用名称 ************** -->
+    <title>随机数生成器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
         * {
             margin: 0;
             padding: 0;
@@ -422,224 +421,251 @@
                 bottom: 60px;
             }
         }
-    
-.gesture-area {
-    touch-action: none;
-}
-</style>
+    </style>
 </head>
 <body>
-<div class="container">
-<div class="app-header">
-<!-- ************** 应用名称 ************** -->
-<div class="app-title">NumberGen</div>
-</div>
-<div class="gesture-area" id="gestureArea"><div class="main-content">
-<div class="random-number" id="randomNumber">42</div>
-<div class="range-display">
-<span>范围：</span>
-<span id="minValue">1</span>
-<span>-</span>
-<span id="maxValue">100</span>
-</div>
-<div class="instruction">
-<i class="fas fa-hand-pointer"></i> 点击屏幕刷新 • <i class="fas fa-arrow-up"></i> 上滑打开设置
+    <div class="container">
+        <div class="app-header">
+            <!-- ************** 应用名称 ************** -->
+            <div class="app-title">随机数生成器</div>
+        </div>
+        
+        <div class="main-content">
+            <div class="random-number" id="randomNumber">42</div>
+            <div class="range-display">
+                <span>范围：</span>
+                <span id="minValue">1</span>
+                <span>-</span>
+                <span id="maxValue">100</span>
             </div>
-</div></div>
-<div class="panel-overlay" id="panelOverlay"></div>
-<div class="settings-panel" id="settingsPanel">
-<div class="settings-header">
-<!-- ************** 设置面板标题 ************** -->
-<h2><i class="fas fa-sliders-h"></i> 设置范围</h2>
-<button class="close-btn" id="closeSettings">完成</button>
-</div>
-<div class="input-group">
-<label for="minInput"><i class="fas fa-arrow-down"></i> 最小值</label>
-<input id="minInput" type="number" value="1"/>
-</div>
-<div class="input-group">
-<label for="maxInput"><i class="fas fa-arrow-up"></i> 最大值</label>
-<input id="maxInput" type="number" value="100"/>
-</div>
-<button class="save-btn" id="saveSettings">
-<i class="fas fa-save"></i> 保存设置
+            
+            <div class="instruction">
+                <i class="fas fa-hand-pointer"></i> 点击屏幕刷新 • <i class="fas fa-arrow-up"></i> 上滑打开设置
+            </div>
+        </div>
+        
+        <div class="panel-overlay" id="panelOverlay"></div>
+        
+        <div class="settings-panel" id="settingsPanel">
+            <div class="settings-header">
+                <!-- ************** 设置面板标题 ************** -->
+                <h2><i class="fas fa-sliders-h"></i> 设置范围</h2>
+                <button class="close-btn" id="closeSettings">完成</button>
+            </div>
+            
+            <div class="input-group">
+                <label for="minInput"><i class="fas fa-arrow-down"></i> 最小值</label>
+                <input type="number" id="minInput" value="1">
+            </div>
+            
+            <div class="input-group">
+                <label for="maxInput"><i class="fas fa-arrow-up"></i> 最大值</label>
+                <input type="number" id="maxInput" value="100">
+            </div>
+            
+            <button class="save-btn" id="saveSettings">
+                <i class="fas fa-save"></i> 保存设置
             </button>
-<div class="add-to-home">
-<i class="fas fa-mobile-alt"></i> 可<a href="add_to_home_guide.html" target="_blank">添加到主屏幕</a>使用
+            
+            <div class="add-to-home">
+                <i class="fas fa-mobile-alt"></i> 可添加到主屏幕使用
             </div>
-</div>
-</div>
-<div class="notification" id="notification">设置已保存</div>
-<!-- ************** PWA安装提示 ************** -->
-<div class="pwa-install-prompt" id="installPrompt" style="display: none;">
-<p>添加到主屏幕，获得更好的使用体验</p>
-<div class="pwa-install-buttons">
-<button class="pwa-install-btn" id="installBtn">添加</button>
-<button class="pwa-dismiss-btn" id="dismissBtn">取消</button>
-</div>
-</div>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification">设置已保存</div>
+    
+    <!-- ************** PWA安装提示 ************** -->
+    <div class="pwa-install-prompt" id="installPrompt" style="display: none;">
+        <p>添加到主屏幕，获得更好的使用体验</p>
+        <div class="pwa-install-buttons">
+            <button class="pwa-install-btn" id="installBtn">添加</button>
+            <button class="pwa-dismiss-btn" id="dismissBtn">取消</button>
+        </div>
+    </div>
+    
+    <script>
+        // 当前设置
+        let minValue = 1;
+        let maxValue = 100;
+        let deferredPrompt;
+        
+        // DOM元素
+        const randomNumberEl = document.getElementById('randomNumber');
+        const minValueEl = document.getElementById('minValue');
+        const maxValueEl = document.getElementById('maxValue');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const panelOverlay = document.getElementById('panelOverlay');
+        const closeSettingsBtn = document.getElementById('closeSettings');
+        const saveSettingsBtn = document.getElementById('saveSettings');
+        const minInput = document.getElementById('minInput');
+        const maxInput = document.getElementById('maxInput');
+        const notification = document.getElementById('notification');
+        const installPrompt = document.getElementById('installPrompt');
+        const installBtn = document.getElementById('installBtn');
+        const dismissBtn = document.getElementById('dismissBtn');
+        
+        // 生成随机数
+        function generateRandomNumber() {
+            // 添加动画效果
+            randomNumberEl.classList.remove('animate-number');
+            void randomNumberEl.offsetWidth; // 触发重排
+            randomNumberEl.classList.add('animate-number');
+            
+            // 生成并显示随机数
+            const randomNum = Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue;
+            randomNumberEl.textContent = randomNum;
+        }
+        
+        // 更新范围显示
+        function updateRangeDisplay() {
+            minValueEl.textContent = minValue;
+            maxValueEl.textContent = maxValue;
+        }
+        
 
-<script>
-let minValue = 1;
-let maxValue = 100;
-let deferredPrompt;
+        
+        // 初始化页面
+        function init() {
+            generateRandomNumber();
+            updateRangeDisplay();
+            checkDarkMode();
+            
 
-let touchStartY = 0;
-let touchStartTime = 0;
-
-const gestureArea = document.getElementById('gestureArea');
-const randomNumberEl = document.getElementById('randomNumber');
-const minValueEl = document.getElementById('minValue');
-const maxValueEl = document.getElementById('maxValue');
-const settingsPanel = document.getElementById('settingsPanel');
-const panelOverlay = document.getElementById('panelOverlay');
-const closeSettingsBtn = document.getElementById('closeSettings');
-const saveSettingsBtn = document.getElementById('saveSettings');
-const minInput = document.getElementById('minInput');
-const maxInput = document.getElementById('maxInput');
-const notification = document.getElementById('notification');
-const installPrompt = document.getElementById('installPrompt');
-const installBtn = document.getElementById('installBtn');
-const dismissBtn = document.getElementById('dismissBtn');
-
-function generateRandomNumber() {
-    randomNumberEl.classList.remove('animate-number');
-    void randomNumberEl.offsetWidth;
-    randomNumberEl.classList.add('animate-number');
-
-    const randomNum = Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue;
-    randomNumberEl.textContent = randomNum;
-}
-
-function updateRangeDisplay() {
-    minValueEl.textContent = minValue;
-    maxValueEl.textContent = maxValue;
-}
-
-function checkDarkMode() {
-    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    document.body.classList.toggle('dark-mode', isDarkMode);
-    const themeColor = isDarkMode ? "#1e1e2e" : "#6e8efb";
-    document.querySelector('meta[name="theme-color"]').setAttribute('content', themeColor);
-}
-
-function openSettings() {
-    minInput.value = minValue;
-    maxInput.value = maxValue;
-    settingsPanel.classList.add('show');
-    panelOverlay.classList.add('show');
-}
-
-function closeSettings() {
-    settingsPanel.classList.remove('show');
-    panelOverlay.classList.remove('show');
-}
-
-function saveSettings() {
-    let newMin = parseInt(minInput.value);
-    let newMax = parseInt(maxInput.value);
-
-    if (isNaN(newMin) || isNaN(newMax)) {
-        showNotification('请输入有效数字');
-        return;
-    }
-
-    if (newMin >= newMax) {
-        showNotification('最小值必须小于最大值');
-        return;
-    }
-
-    if (newMax - newMin > 1000000) {
-        showNotification('范围过大，请减小差值');
-        return;
-    }
-
-    minValue = newMin;
-    maxValue = newMax;
-    updateRangeDisplay();
-    generateRandomNumber();
-    closeSettings();
-    showNotification('设置已保存');
-}
-
-function showNotification(message) {
-    notification.textContent = message;
-    notification.classList.add('show');
-    setTimeout(() => {
-        notification.classList.remove('show');
-    }, 2000);
-}
-
-function installPWA() {
-    installPrompt.style.display = 'none';
-    if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-            if (choiceResult.outcome === 'accepted') {
-                console.log('用户接受安装');
+            
+            // 点击事件：生成新随机数
+            document.body.addEventListener('click', function(e) {
+                // 只有当设置面板未显示时才生成随机数
+                if (!settingsPanel.classList.contains('show')) {
+                    generateRandomNumber();
+                }
+            });
+            
+            // 触摸滑动事件
+            let startY = 0;
+            let isScrolling = false;
+            
+            document.body.addEventListener('touchstart', function(e) {
+                startY = e.touches[0].clientY;
+                isScrolling = false;
+            });
+            
+            document.body.addEventListener('touchmove', function(e) {
+                const currentY = e.touches[0].clientY;
+                const diffY = startY - currentY;
+                
+                // 检测到向上滑动
+                if (diffY > 30 && !isScrolling && !settingsPanel.classList.contains('show')) {
+                    openSettings();
+                    isScrolling = true;
+                }
+            });
+            
+            // 设置面板相关事件
+            closeSettingsBtn.addEventListener('click', closeSettings);
+            saveSettingsBtn.addEventListener('click', saveSettings);
+            panelOverlay.addEventListener('click', closeSettings);
+            
+            // PWA安装提示事件
+            installBtn.addEventListener('click', installPWA);
+            dismissBtn.addEventListener('click', dismissInstallPrompt);
+            
+            // 监听PWA安装事件
+            window.addEventListener('beforeinstallprompt', (e) => {
+                // 防止Chrome自动显示安装提示
+                e.preventDefault();
+                deferredPrompt = e;
+                
+                // 显示自定义安装提示
+                setTimeout(() => {
+                    installPrompt.style.display = 'flex';
+                }, 3000);
+            });
+        }
+        
+        // 打开设置面板
+        function openSettings() {
+            minInput.value = minValue;
+            maxInput.value = maxValue;
+            settingsPanel.classList.add('show');
+            panelOverlay.classList.add('show');
+        }
+        
+        // 关闭设置面板
+        function closeSettings() {
+            settingsPanel.classList.remove('show');
+            panelOverlay.classList.remove('show');
+        }
+        
+        // 保存设置
+        function saveSettings() {
+            let newMin = parseInt(minInput.value);
+            let newMax = parseInt(maxInput.value);
+            
+            // 验证输入
+            if (isNaN(newMin) || isNaN(newMax)) {
+                showNotification('请输入有效数字');
+                return;
             }
-            deferredPrompt = null;
-        });
-    }
-}
-
-function dismissInstallPrompt() {
-    installPrompt.style.display = 'none';
-}
-
-function init() {
-    generateRandomNumber();
-    updateRangeDisplay();
-    checkDarkMode();
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', checkDarkMode);
-
-    gestureArea.addEventListener('touchstart', function (e) {
-        touchStartY = e.touches[0].clientY;
-        touchStartTime = Date.now();
-    });
-
-    gestureArea.addEventListener('touchend', function (e) {
-        const touchEndY = e.changedTouches[0].clientY;
-        const deltaY = touchEndY - touchStartY;
-        const deltaTime = Date.now() - touchStartTime;
-
-        if (deltaY < -30) {
-            if (!settingsPanel.classList.contains('show')) {
-                openSettings();
+            
+            if (newMin >= newMax) {
+                showNotification('最小值必须小于最大值');
+                return;
+            }
+            
+            if (newMax - newMin > 1000000) {
+                showNotification('范围过大，请减小差值');
+                return;
+            }
+            
+            // 更新设置
+            minValue = newMin;
+            maxValue = newMax;
+            
+            // 更新显示
+            updateRangeDisplay();
+            
+            // 重新生成随机数
+            generateRandomNumber();
+            
+            // 关闭面板
+            closeSettings();
+            
+            // 显示成功通知
+            showNotification('设置已保存');
+        }
+        
+        // 显示通知
+        function showNotification(message) {
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 2000);
+        }
+        
+        // 安装PWA
+        function installPWA() {
+            installPrompt.style.display = 'none';
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('用户接受安装');
+                    }
+                    deferredPrompt = null;
+                });
             }
         }
-        else if (Math.abs(deltaY) < 10 && deltaTime < 300) {
-            if (!settingsPanel.classList.contains('show')) {
-                generateRandomNumber();
-            }
+        
+        // 关闭安装提示
+        function dismissInstallPrompt() {
+            installPrompt.style.display = 'none';
         }
-    });
-
-    gestureArea.addEventListener('touchmove', function (e) {
-        e.preventDefault();
-    }, { passive: false });
-
-    closeSettingsBtn.addEventListener('click', closeSettings);
-    saveSettingsBtn.addEventListener('click', saveSettings);
-    panelOverlay.addEventListener('click', closeSettings);
-    installBtn.addEventListener('click', installPWA);
-    dismissBtn.addEventListener('click', dismissInstallPrompt);
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        setTimeout(() => {
-            installPrompt.style.display = 'flex';
-        }, 3000);
-    });
-
-    if (window.navigator.standalone) {
-        document.documentElement.style.overscrollBehavior = 'none';
-        document.querySelector('.app-header').style.top = '30px';
-        document.querySelector('.instruction').style.bottom = '50px';
-    }
-}
-
-init();
-</script></body>
+        
+        // 初始化应用
+        init();
+    </script>
+</body>
 </html>
