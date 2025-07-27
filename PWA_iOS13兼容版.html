@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover, user-scalable=no" name="viewport"/>
+<!-- ************** PWA全屏模式设置 ************** -->
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="#6e8efb" name="theme-color"/>
+<link href="/apple-touch-icon.png" rel="apple-touch-icon"/>
+<!-- ************** 应用名称 ************** -->
+<title>RandNumber</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            color: #333;
+            position: relative;
+            transition: background 0.5s ease;
+        }
+        
+        .container {
+            width: 100%;
+            height: 100vh;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.95);
+            transition: background 0.5s ease;
+        }
+        
+        .app-header {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+        }
+        
+        .app-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #5e72e4;
+            text-shadow: 0 2px 4px rgba(94, 114, 228, 0.2);
+            transition: color 0.5s ease;
+        }
+        
+        .random-number {
+            font-size: 96px;
+            font-weight: 800;
+            color: #5e72e4;
+            margin: 20px 0;
+            text-shadow: 0 4px 10px rgba(94, 114, 228, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .animate-number {
+            animation: pulse 0.5s ease;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .range-display {
+            background: rgba(94, 114, 228, 0.1);
+            padding: 12px 24px;
+            border-radius: 50px;
+            margin-top: 20px;
+            font-size: 16px;
+            color: #5e72e4;
+            font-weight: 500;
+            display: flex;
+            gap: 10px;
+            position: relative;
+            z-index: 2;
+            backdrop-filter: blur(5px);
+            transition: all 0.5s ease;
+        }
+        
+        .instruction {
+            position: absolute;
+            bottom: 40px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: #888;
+            font-size: 15px;
+            padding: 0 20px;
+            z-index: 2;
+            transition: color 0.5s ease;
+        }
+        
+        .settings-panel {
+            position: fixed;
+            bottom: -60%;
+            left: 0;
+            right: 0;
+            height: 60%;
+            background: white;
+            border-radius: 24px 24px 0 0;
+            padding: 25px 20px 20px;
+            box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.15);
+            transition: bottom 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            z-index: 20;
+            overflow-y: auto;
+            transition: background 0.5s ease;
+        }
+        
+        .settings-panel.show {
+            bottom: 0;
+        }
+        
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            transition: border-color 0.5s ease;
+        }
+        
+        .settings-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #5e72e4;
+            transition: color 0.5s ease;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: #007AFF;
+            font-weight: 500;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: color 0.5s ease;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+            font-size: 16px;
+            transition: color 0.5s ease;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 18px;
+            outline: none;
+            transition: border-color 0.3s, background 0.5s ease;
+            background: #f8f9ff;
+        }
+        
+        .input-group input:focus {
+            border-color: #5e72e4;
+            box-shadow: 0 0 0 2px rgba(94, 114, 228, 0.2);
+        }
+        
+        .save-btn {
+            background: linear-gradient(to right, #5e72e4, #825ee4);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 18px;
+            font-size: 18px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, background 0.5s ease;
+            box-shadow: 0 4px 15px rgba(94, 114, 228, 0.3);
+        }
+        
+        .save-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 8px rgba(94, 114, 228, 0.3);
+        }
+        
+        .panel-overlay {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            background: rgba(0, 0, 0, 0);
+            transition: background 0.4s ease;
+            z-index: 15;
+            pointer-events: none;
+        }
+        
+        .panel-overlay.show {
+            background: rgba(0, 0, 0, 0.4);
+            pointer-events: auto;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            z-index: 200;
+            transition: transform 0.4s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .notification.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        .add-to-home {
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+            margin-top: 15px;
+            padding: 10px;
+            border-top: 1px solid #eee;
+            transition: color 0.5s ease, border-color 0.5s ease;
+        }
+        
+        /* ************** 暗黑模式样式 ************** */
+        body.dark-mode {
+            background: linear-gradient(135deg, #4a00e0, #8e2de2);
+        }
+        
+        .dark-mode .main-content {
+            background: rgba(30, 30, 46, 0.95);
+        }
+        
+        .dark-mode .app-title,
+        .dark-mode .random-number {
+            color: #a6b0ff;
+            text-shadow: 0 2px 4px rgba(166, 176, 255, 0.2);
+        }
+        
+        .dark-mode .range-display {
+            background: rgba(166, 176, 255, 0.1);
+            color: #a6b0ff;
+        }
+        
+        .dark-mode .instruction {
+            color: #aaa;
+        }
+        
+        .dark-mode .settings-panel {
+            background: #1e1e2e;
+        }
+        
+        .dark-mode .settings-header {
+            border-bottom: 1px solid #333;
+        }
+        
+        .dark-mode .settings-header h2 {
+            color: #a6b0ff;
+        }
+        
+        .dark-mode .close-btn {
+            color: #a6b0ff;
+        }
+        
+        .dark-mode .input-group label {
+            color: #ddd;
+        }
+        
+        .dark-mode .input-group input {
+            background: #252536;
+            border-color: #444;
+            color: #fff;
+        }
+        
+        .dark-mode .save-btn {
+            background: linear-gradient(to right, #a6b0ff, #b197fc);
+        }
+        
+        .dark-mode .add-to-home {
+            color: #aaa;
+            border-top: 1px solid #333;
+        }
+        
+        /* ************** PWA安装提示 ************** */
+        .pwa-install-prompt {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            max-width: 90%;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .dark-mode .pwa-install-prompt {
+            background: rgba(30, 30, 46, 0.95);
+        }
+        
+        .pwa-install-prompt p {
+            font-size: 14px;
+            color: #333;
+            margin: 0;
+        }
+        
+        .dark-mode .pwa-install-prompt p {
+            color: #ddd;
+        }
+        
+        .pwa-install-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .pwa-install-btn {
+            background: #5e72e4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .pwa-install-btn:hover {
+            background: #4a5bd0;
+        }
+        
+        .pwa-dismiss-btn {
+            background: transparent;
+            color: #888;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .dark-mode .pwa-dismiss-btn {
+            border-color: #555;
+            color: #aaa;
+        }
+        
+        .pwa-dismiss-btn:hover {
+            background: #f5f5f5;
+        }
+        
+        .dark-mode .pwa-dismiss-btn:hover {
+            background: #252536;
+        }
+        
+        @media (max-height: 700px) {
+            .random-number {
+                font-size: 80px;
+            }
+            .settings-panel {
+                height: 70%;
+                bottom: -70%;
+            }
+        }
+        
+        /* ************** 全屏模式调整 ************** */
+        @media all and (display-mode: standalone) {
+            body {
+                overflow: hidden;
+            }
+            .app-header {
+                top: 40px;
+            }
+            .instruction {
+                bottom: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+<div class="app-header">
+<!-- ************** 应用名称 ************** -->
+<div class="app-title">NumberGen</div>
+</div>
+<div class="main-content">
+<div class="random-number" id="randomNumber">42</div>
+<div class="range-display">
+<span>范围：</span>
+<span id="minValue">1</span>
+<span>-</span>
+<span id="maxValue">100</span>
+</div>
+<div class="instruction">
+<i class="fas fa-hand-pointer"></i> 点击屏幕刷新 • <i class="fas fa-arrow-up"></i> 上滑打开设置
+            </div>
+</div>
+<div class="panel-overlay" id="panelOverlay"></div>
+<div class="settings-panel" id="settingsPanel">
+<div class="settings-header">
+<!-- ************** 设置面板标题 ************** -->
+<h2><i class="fas fa-sliders-h"></i> 设置范围</h2>
+<button class="close-btn" id="closeSettings">完成</button>
+</div>
+<div class="input-group">
+<label for="minInput"><i class="fas fa-arrow-down"></i> 最小值</label>
+<input id="minInput" type="number" value="1"/>
+</div>
+<div class="input-group">
+<label for="maxInput"><i class="fas fa-arrow-up"></i> 最大值</label>
+<input id="maxInput" type="number" value="100"/>
+</div>
+<button class="save-btn" id="saveSettings">
+<i class="fas fa-save"></i> 保存设置
+            </button>
+<div class="add-to-home">
+<i class="fas fa-mobile-alt"></i> 可<a href="add_to_home_guide.html" target="_blank">添加到主屏幕</a>使用
+            </div>
+</div>
+</div>
+<div class="notification" id="notification">设置已保存</div>
+<!-- ************** PWA安装提示 ************** -->
+<div class="pwa-install-prompt" id="installPrompt" style="display: none;">
+<p>添加到主屏幕，获得更好的使用体验</p>
+<div class="pwa-install-buttons">
+<button class="pwa-install-btn" id="installBtn">添加</button>
+<button class="pwa-dismiss-btn" id="dismissBtn">取消</button>
+</div>
+</div>
+
+<script>
+let minValue = 1;
+let maxValue = 100;
+let deferredPrompt;
+
+let touchStartY = 0;
+let touchStartTime = 0;
+
+const randomNumberEl = document.getElementById('randomNumber');
+const minValueEl = document.getElementById('minValue');
+const maxValueEl = document.getElementById('maxValue');
+const settingsPanel = document.getElementById('settingsPanel');
+const panelOverlay = document.getElementById('panelOverlay');
+const closeSettingsBtn = document.getElementById('closeSettings');
+const saveSettingsBtn = document.getElementById('saveSettings');
+const minInput = document.getElementById('minInput');
+const maxInput = document.getElementById('maxInput');
+const notification = document.getElementById('notification');
+const installPrompt = document.getElementById('installPrompt');
+const installBtn = document.getElementById('installBtn');
+const dismissBtn = document.getElementById('dismissBtn');
+
+function generateRandomNumber() {
+    randomNumberEl.classList.remove('animate-number');
+    void randomNumberEl.offsetWidth;
+    randomNumberEl.classList.add('animate-number');
+
+    const randomNum = Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue;
+    randomNumberEl.textContent = randomNum;
+}
+
+function updateRangeDisplay() {
+    minValueEl.textContent = minValue;
+    maxValueEl.textContent = maxValue;
+}
+
+function checkDarkMode() {
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.body.classList.toggle('dark-mode', isDarkMode);
+    const themeColor = isDarkMode ? "#1e1e2e" : "#6e8efb";
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', themeColor);
+}
+
+function openSettings() {
+    minInput.value = minValue;
+    maxInput.value = maxValue;
+    settingsPanel.classList.add('show');
+    panelOverlay.classList.add('show');
+}
+
+function closeSettings() {
+    settingsPanel.classList.remove('show');
+    panelOverlay.classList.remove('show');
+}
+
+function saveSettings() {
+    let newMin = parseInt(minInput.value);
+    let newMax = parseInt(maxInput.value);
+
+    if (isNaN(newMin) || isNaN(newMax)) {
+        showNotification('请输入有效数字');
+        return;
+    }
+
+    if (newMin >= newMax) {
+        showNotification('最小值必须小于最大值');
+        return;
+    }
+
+    if (newMax - newMin > 1000000) {
+        showNotification('范围过大，请减小差值');
+        return;
+    }
+
+    minValue = newMin;
+    maxValue = newMax;
+    updateRangeDisplay();
+    generateRandomNumber();
+    closeSettings();
+    showNotification('设置已保存');
+}
+
+function showNotification(message) {
+    notification.textContent = message;
+    notification.classList.add('show');
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 2000);
+}
+
+function installPWA() {
+    installPrompt.style.display = 'none';
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('用户接受安装');
+            }
+            deferredPrompt = null;
+        });
+    }
+}
+
+function dismissInstallPrompt() {
+    installPrompt.style.display = 'none';
+}
+
+function init() {
+    generateRandomNumber();
+    updateRangeDisplay();
+    checkDarkMode();
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', checkDarkMode);
+
+    document.body.addEventListener('touchstart', function (e) {
+        touchStartY = e.touches[0].clientY;
+        touchStartTime = Date.now();
+    });
+
+    document.body.addEventListener('touchend', function (e) {
+        const touchEndY = e.changedTouches[0].clientY;
+        const deltaY = touchEndY - touchStartY;
+        const deltaTime = Date.now() - touchStartTime;
+
+        if (deltaY < -30) {
+            if (!settingsPanel.classList.contains('show')) {
+                openSettings();
+            }
+        }
+        else if (Math.abs(deltaY) < 10 && deltaTime < 300) {
+            if (!settingsPanel.classList.contains('show')) {
+                generateRandomNumber();
+            }
+        }
+    });
+
+    document.body.addEventListener('touchmove', function (e) {
+        if (e.scale !== 1) e.preventDefault();
+    }, { passive: false });
+
+    closeSettingsBtn.addEventListener('click', closeSettings);
+    saveSettingsBtn.addEventListener('click', saveSettings);
+    panelOverlay.addEventListener('click', closeSettings);
+    installBtn.addEventListener('click', installPWA);
+    dismissBtn.addEventListener('click', dismissInstallPrompt);
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        setTimeout(() => {
+            installPrompt.style.display = 'flex';
+        }, 3000);
+    });
+
+    if (window.navigator.standalone) {
+        document.documentElement.style.overscrollBehavior = 'none';
+        document.querySelector('.app-header').style.top = '30px';
+        document.querySelector('.instruction').style.bottom = '50px';
+    }
+}
+
+init();
+</script></body>
+</html>
