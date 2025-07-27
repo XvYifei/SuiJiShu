@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- PWA全屏模式设置 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#6e8efb">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <title>随机数生成器</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -25,6 +28,7 @@
             color: #333;
             position: relative;
             touch-action: none;
+            transition: background 0.5s ease;
         }
         
         .container {
@@ -46,6 +50,7 @@
             position: relative;
             z-index: 1;
             background: rgba(255, 255, 255, 0.95);
+            transition: background 0.5s ease;
         }
         
         .app-header {
@@ -61,16 +66,18 @@
             font-weight: 700;
             color: #5e72e4;
             text-shadow: 0 2px 4px rgba(94, 114, 228, 0.2);
+            transition: color 0.5s ease;
         }
         
         .random-number {
-            font-size: 96px;
+            font-size: 120px; /* 放大随机数字体 */
             font-weight: 800;
             color: #5e72e4;
             margin: 20px 0;
             text-shadow: 0 4px 10px rgba(94, 114, 228, 0.2);
             position: relative;
             z-index: 2;
+            transition: all 0.3s ease;
         }
         
         .animate-number {
@@ -96,6 +103,7 @@
             position: relative;
             z-index: 2;
             backdrop-filter: blur(5px);
+            transition: all 0.5s ease;
         }
         
         .instruction {
@@ -108,6 +116,7 @@
             font-size: 15px;
             padding: 0 20px;
             z-index: 2;
+            transition: color 0.5s ease;
         }
         
         .settings-panel {
@@ -123,6 +132,7 @@
             transition: bottom 0.4s cubic-bezier(0.22, 1, 0.36, 1);
             z-index: 20;
             overflow-y: auto;
+            transition: background 0.5s ease;
         }
         
         .settings-panel.show {
@@ -136,12 +146,14 @@
             margin-bottom: 20px;
             padding-bottom: 15px;
             border-bottom: 1px solid #eee;
+            transition: border-color 0.5s ease;
         }
         
         .settings-header h2 {
             font-size: 22px;
             font-weight: 700;
             color: #5e72e4;
+            transition: color 0.5s ease;
         }
         
         .close-btn {
@@ -152,6 +164,7 @@
             font-weight: 500;
             padding: 8px 16px;
             cursor: pointer;
+            transition: color 0.5s ease;
         }
         
         .input-group {
@@ -164,6 +177,7 @@
             font-weight: 500;
             color: #333;
             font-size: 16px;
+            transition: color 0.5s ease;
         }
         
         .input-group input {
@@ -174,6 +188,7 @@
             font-size: 18px;
             outline: none;
             background: #f8f9ff;
+            transition: border-color 0.3s, background 0.5s ease;
         }
         
         .input-group input:focus {
@@ -192,6 +207,7 @@
             width: 100%;
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(94, 114, 228, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s, background 0.5s ease;
         }
         
         .save-btn:active {
@@ -235,30 +251,101 @@
             transform: translateX(-50%) translateY(0);
         }
         
-        .gesture-feedback {
-            position: absolute;
-            font-size: 36px;
-            font-weight: bold;
+        /* 新添加的添加到主屏幕提示样式 */
+        .add-to-home {
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+            margin-top: 15px;
+            padding: 10px;
+            border-top: 1px solid #eee;
+            transition: color 0.5s ease, border-color 0.5s ease;
+        }
+        
+        .add-to-home a {
+            color: #5e72e4;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        .add-to-home a:hover {
+            background: rgba(94, 114, 228, 0.1);
+            text-decoration: underline;
+        }
+        
+        /* ************** 暗黑模式样式 ************** */
+        body.dark-mode {
+            background: linear-gradient(135deg, #4a00e0, #8e2de2);
+        }
+        
+        .dark-mode .main-content {
+            background: rgba(30, 30, 46, 0.95);
+        }
+        
+        .dark-mode .app-title,
+        .dark-mode .random-number {
+            color: #a6b0ff;
+            text-shadow: 0 2px 4px rgba(166, 176, 255, 0.2);
+        }
+        
+        .dark-mode .range-display {
+            background: rgba(166, 176, 255, 0.1);
+            color: #a6b0ff;
+        }
+        
+        .dark-mode .instruction {
+            color: #aaa;
+        }
+        
+        .dark-mode .settings-panel {
+            background: #1e1e2e;
+        }
+        
+        .dark-mode .settings-header {
+            border-bottom: 1px solid #333;
+        }
+        
+        .dark-mode .settings-header h2 {
+            color: #a6b0ff;
+        }
+        
+        .dark-mode .close-btn {
+            color: #a6b0ff;
+        }
+        
+        .dark-mode .input-group label {
+            color: #ddd;
+        }
+        
+        .dark-mode .input-group input {
+            background: #252536;
+            border-color: #444;
             color: #fff;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
-            opacity: 0;
-            pointer-events: none;
-            z-index: 100;
-            transition: opacity 0.3s, transform 0.8s;
-            transform: translateY(0);
         }
         
-        .click-feedback {
-            color: #4CAF50;
+        .dark-mode .save-btn {
+            background: linear-gradient(to right, #a6b0ff, #b197fc);
         }
         
-        .swipe-feedback {
-            color: #2196F3;
+        .dark-mode .add-to-home {
+            color: #aaa;
+            border-top: 1px solid #333;
+        }
+        
+        .dark-mode .add-to-home a {
+            color: #a6b0ff;
+        }
+        
+        .dark-mode .add-to-home a:hover {
+            background: rgba(166, 176, 255, 0.1);
         }
         
         @media (max-height: 700px) {
             .random-number {
-                font-size: 80px;
+                font-size: 100px; /* 响应式调整 */
             }
             .settings-panel {
                 height: 70%;
@@ -275,6 +362,13 @@
             }
             .instruction {
                 bottom: 60px;
+            }
+            /* 修复iOS全屏模式状态栏颜色问题 */
+            body {
+                padding-top: env(safe-area-inset-top);
+            }
+            .main-content {
+                padding-top: calc(20px + env(safe-area-inset-top));
             }
         }
     </style>
@@ -320,6 +414,11 @@
             <button class="save-btn" id="saveSettings">
                 <i class="fas fa-save"></i> 保存设置
             </button>
+            
+            <!-- 新增添加到主屏幕提示 -->
+            <div class="add-to-home">
+                <i class="fas fa-mobile-alt"></i> 可<a href="add_to_home_guide.html" target="_blank">添加到主屏幕</a>使用
+            </div>
         </div>
     </div>
     
@@ -366,12 +465,24 @@
             maxValueEl.textContent = maxValue;
         }
         
-        
+        // 暗黑模式检测
+        function checkDarkMode() {
+            const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.body.classList.toggle('dark-mode', isDarkMode);
+            
+            // 更新主题颜色
+            const themeColor = isDarkMode ? "#1e1e2e" : "#6e8efb";
+            document.querySelector('meta[name="theme-color"]').setAttribute('content', themeColor);
+        }
         
         // 初始化页面
         function init() {
             generateRandomNumber();
             updateRangeDisplay();
+            checkDarkMode(); // 初始检测暗黑模式
+            
+            // 监听暗黑模式变化
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', checkDarkMode);
             
             // 触摸事件处理
             document.body.addEventListener('touchstart', function(e) {
@@ -386,7 +497,6 @@
                 // 检测到向上滑动（diffY > 0 表示向上）
                 if (diffY > 30 && !isSwiping && !settingsPanel.classList.contains('show')) {
                     isSwiping = true;
-                    
                     openSettings();
                 }
             });
@@ -404,7 +514,6 @@
                 
                 // 点击手势
                 if (!isSwiping && !isSwipe && !settingsPanel.classList.contains('show')) {
-                    
                     generateRandomNumber();
                 }
                 isSwiping = false;
@@ -413,7 +522,6 @@
             // 鼠标点击事件（用于桌面测试）
             document.body.addEventListener('click', function(e) {
                 if (!settingsPanel.classList.contains('show')) {
-                    createFeedbackElement('点击', e.clientX, e.clientY, true);
                     generateRandomNumber();
                 }
             });
@@ -422,6 +530,16 @@
             closeSettingsBtn.addEventListener('click', closeSettings);
             saveSettingsBtn.addEventListener('click', saveSettings);
             panelOverlay.addEventListener('click', closeSettings);
+            
+            // iOS全屏模式特殊处理
+            if (window.navigator.standalone) {
+                // 修复iOS全屏模式下的滚动问题
+                document.documentElement.style.overscrollBehavior = 'none';
+                
+                // 修复iOS全屏模式下的点击区域问题
+                document.querySelector('.app-header').style.top = '30px';
+                document.querySelector('.instruction').style.bottom = '50px';
+            }
         }
         
         // 打开设置面板
