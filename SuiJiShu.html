@@ -427,15 +427,15 @@
     
     <div class="notification" id="notification">设置已保存</div>
     
-    <script>
+<script>
         // 当前设置
         let minValue = 1;
-        let maxValue = 100;
+        let maxValue = 12;
         
         // 触摸状态跟踪变量
         let touchStartY = 0;
         let touchEndY = 0;
-        let isSwiping = false;
+        let deferredPrompt;
         
         // DOM元素
         const randomNumberEl = document.getElementById('randomNumber');
@@ -448,8 +448,9 @@
         const minInput = document.getElementById('minInput');
         const maxInput = document.getElementById('maxInput');
         const notification = document.getElementById('notification');
-        const addToHomePrompt = document.getElementById('addToHomePrompt');
-        const body = document.body;
+        const installPrompt = document.getElementById('installPrompt');
+        const installBtn = document.getElementById('installBtn');
+        const dismissBtn = document.getElementById('dismissBtn');
         
         // 生成随机数
         function generateRandomNumber() {
@@ -501,43 +502,27 @@
             // 监听暗黑模式变化
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', checkDarkMode);
             
-            // 触摸事件处理
+             // 触摸滑动事件
+            let startY = 0;
+            let isScrolling = false;
+            
             document.body.addEventListener('touchstart', function(e) {
-                touchStartY = e.touches[0].clientY;
-                isSwiping = false;
+                startY = e.touches[0].clientY;
+                isScrolling = false;
             });
             
             document.body.addEventListener('touchmove', function(e) {
-                const touchY = e.touches[0].clientY;
-                const diffY = touchStartY - touchY;
+                const currentY = e.touches[0].clientY;
+                const diffY = startY - currentY;
                 
-                // 检测到向上滑动（diffY > 0 表示向上）
-                if (diffY > 30 && !isSwiping && !settingsPanel.classList.contains('show')) {
-                    isSwiping = true;
+                // 检测到向上滑动
+                if (diffY > 30 && !isScrolling && !settingsPanel.classList.contains('show')) {
                     openSettings();
+                    isScrolling = true;
                 }
             });
             
-            document.body.addEventListener('touchend', function(e) {
-                const touchEndY = e.changedTouches[0].clientY;
-                
-                // 计算滑动距离
-                const distanceY = touchEndY - touchStartY;
-                const isSwipe = Math.abs(distanceY) > 10;
-                
-                // 点击手势
-                if (!isSwiping && !isSwipe && !settingsPanel.classList.contains('show')) {
-                    generateRandomNumber();
-                }
-                isSwiping = false;
-            });
             
-            // 鼠标点击事件（用于桌面测试）
-            document.body.addEventListener('click', function(e) {
-                if (!settingsPanel.classList.contains('show')) {
-                    generateRandomNumber();
-                }
-            });
             
             // 设置面板相关事件
             closeSettingsBtn.addEventListener('click', closeSettings);
@@ -616,5 +601,6 @@
         // 初始化应用
         init();
     </script>
+
 </body>
 </html>
