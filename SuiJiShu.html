@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>随机数生成器</title>
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎲</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            color: #333;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .container {
+            max-width: 500px;
+            width: 100%;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        
+        header {
+            padding: 24px 20px 16px;
+            text-align: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            background: rgba(255, 255, 255, 0.95);
+            z-index: 10;
+        }
+        
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+            letter-spacing: -0.5px;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px 20px;
+            position: relative;
+        }
+        
+        .random-number {
+            font-size: 96px;
+            font-weight: 800;
+            color: #5e72e4;
+            margin: 20px 0;
+            text-shadow: 0 4px 10px rgba(94, 114, 228, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .animate-number {
+            animation: pulse 0.5s ease;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .range-display {
+            background: rgba(94, 114, 228, 0.1);
+            padding: 12px 24px;
+            border-radius: 50px;
+            margin-top: 20px;
+            font-size: 16px;
+            color: #5e72e4;
+            font-weight: 500;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .instruction {
+            position: absolute;
+            bottom: 60px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: #888;
+            font-size: 15px;
+            padding: 0 20px;
+        }
+        
+        .settings-panel {
+            position: absolute;
+            bottom: -100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 24px 24px 0 0;
+            padding: 32px 20px;
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
+            transition: bottom 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            z-index: 100;
+        }
+        
+        .settings-panel.show {
+            bottom: 0;
+        }
+        
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .settings-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: #007AFF;
+            font-weight: 500;
+            padding: 8px 16px;
+            cursor: pointer;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 18px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input:focus {
+            border-color: #5e72e4;
+        }
+        
+        .save-btn {
+            background: #5e72e4;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 18px;
+            font-size: 18px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            transition: background 0.3s;
+            box-shadow: 0 4px 10px rgba(94, 114, 228, 0.3);
+        }
+        
+        .save-btn:active {
+            background: #4a5cd4;
+            transform: translateY(1px);
+        }
+        
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+            z-index: 50;
+        }
+        
+        .overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            z-index: 200;
+            transition: transform 0.4s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        footer {
+            padding: 20px;
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        @media (max-height: 700px) {
+            .random-number {
+                font-size: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>随机数生成器</h1>
+        </header>
+        
+        <div class="main-content">
+            <div class="random-number" id="randomNumber">42</div>
+            <div class="range-display">
+                <span>范围：</span>
+                <span id="minValue">1</span>
+                <span>-</span>
+                <span id="maxValue">100</span>
+            </div>
+            <div class="instruction">
+                点击屏幕刷新数字 • 上滑打开设置
+            </div>
+        </div>
+        
+        <div class="settings-panel" id="settingsPanel">
+            <div class="settings-header">
+                <h2>设置范围</h2>
+                <button class="close-btn" id="closeSettings">完成</button>
+            </div>
+            
+            <div class="input-group">
+                <label for="minInput">最小值</label>
+                <input type="number" id="minInput" value="1">
+            </div>
+            
+            <div class="input-group">
+                <label for="maxInput">最大值</label>
+                <input type="number" id="maxInput" value="100">
+            </div>
+            
+            <button class="save-btn" id="saveSettings">保存设置</button>
+        </div>
+        
+        <footer>
+            <p>添加到主屏幕使用更便捷</p>
+        </footer>
+    </div>
+    
+    <div class="overlay" id="overlay"></div>
+    
+    <div class="notification" id="notification">设置已保存</div>
+    
+    <script>
+        // 当前设置
+        let minValue = 1;
+        let maxValue = 100;
+        
+        // DOM元素
+        const randomNumberEl = document.getElementById('randomNumber');
+        const minValueEl = document.getElementById('minValue');
+        const maxValueEl = document.getElementById('maxValue');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const overlay = document.getElementById('overlay');
+        const closeSettingsBtn = document.getElementById('closeSettings');
+        const saveSettingsBtn = document.getElementById('saveSettings');
+        const minInput = document.getElementById('minInput');
+        const maxInput = document.getElementById('maxInput');
+        const notification = document.getElementById('notification');
+        const mainContent = document.querySelector('.main-content');
+        
+        // 生成随机数
+        function generateRandomNumber() {
+            // 添加动画效果
+            randomNumberEl.classList.remove('animate-number');
+            void randomNumberEl.offsetWidth; // 触发重排
+            randomNumberEl.classList.add('animate-number');
+            
+            // 生成并显示随机数
+            const randomNum = Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue;
+            randomNumberEl.textContent = randomNum;
+        }
+        
+        // 初始化页面
+        function init() {
+            generateRandomNumber();
+            updateRangeDisplay();
+            
+            // 点击事件：生成新随机数
+            document.body.addEventListener('click', function(e) {
+                // 排除设置面板区域的点击
+                if (!settingsPanel.contains(e.target)) {
+                    generateRandomNumber();
+                }
+            });
+            
+            // 触摸滑动事件
+            let startY = 0;
+            let isScrolling = false;
+            
+            document.body.addEventListener('touchstart', function(e) {
+                startY = e.touches[0].clientY;
+                isScrolling = false;
+            });
+            
+            document.body.addEventListener('touchmove', function(e) {
+                const currentY = e.touches[0].clientY;
+                const diffY = startY - currentY;
+                
+                // 检测到向上滑动
+                if (diffY > 30 && !isScrolling) {
+                    openSettings();
+                    isScrolling = true;
+                }
+            });
+            
+            // 设置面板相关事件
+            closeSettingsBtn.addEventListener('click', closeSettings);
+            saveSettingsBtn.addEventListener('click', saveSettings);
+            
+            // 点击遮罩层关闭设置
+            overlay.addEventListener('click', closeSettings);
+        }
+        
+        // 打开设置面板
+        function openSettings() {
+            minInput.value = minValue;
+            maxInput.value = maxValue;
+            settingsPanel.classList.add('show');
+            overlay.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // 关闭设置面板
+        function closeSettings() {
+            settingsPanel.classList.remove('show');
+            overlay.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+        
+        // 保存设置
+        function saveSettings() {
+            let newMin = parseInt(minInput.value);
+            let newMax = parseInt(maxInput.value);
+            
+            // 验证输入
+            if (isNaN(newMin) || isNaN(newMax)) {
+                showNotification('请输入有效数字');
+                return;
+            }
+            
+            if (newMin >= newMax) {
+                showNotification('最小值必须小于最大值');
+                return;
+            }
+            
+            if (newMax - newMin > 1000000) {
+                showNotification('范围过大，请减小差值');
+                return;
+            }
+            
+            // 更新设置
+            minValue = newMin;
+            maxValue = newMax;
+            
+            // 更新显示
+            updateRangeDisplay();
+            
+            // 重新生成随机数
+            generateRandomNumber();
+            
+            // 关闭面板
+            closeSettings();
+            
+            // 显示成功通知
+            showNotification('设置已保存');
+        }
+        
+        // 更新范围显示
+        function updateRangeDisplay() {
+            minValueEl.textContent = minValue;
+            maxValueEl.textContent = maxValue;
+        }
+        
+        // 显示通知
+        function showNotification(message) {
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 2000);
+        }
+        
+        // 初始化应用
+        init();
+    </script>
+</body>
+</html>
