@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>随机数生成器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
         }
         
         body {
@@ -24,34 +25,12 @@
         }
         
         .container {
-            max-width: 500px;
             width: 100%;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.92);
-            border-radius: 24px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-            overflow: hidden;
             height: 100vh;
+            margin: 0 auto;
             display: flex;
             flex-direction: column;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
             position: relative;
-        }
-        
-        header {
-            padding: 24px 20px 16px;
-            text-align: center;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-            background: rgba(255, 255, 255, 0.95);
-            z-index: 10;
-        }
-        
-        h1 {
-            font-size: 24px;
-            font-weight: 700;
-            color: #333;
-            letter-spacing: -0.5px;
         }
         
         .main-content {
@@ -60,9 +39,26 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 30px 20px;
+            padding: 20px;
             position: relative;
             z-index: 1;
+            background: rgba(255, 255, 255, 0.95);
+            /* 移除了圆角和margin */
+        }
+        
+        .app-header {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+        }
+        
+        .app-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #5e72e4;
+            text-shadow: 0 2px 4px rgba(94, 114, 228, 0.2);
         }
         
         .random-number {
@@ -98,11 +94,12 @@
             gap: 10px;
             position: relative;
             z-index: 2;
+            backdrop-filter: blur(5px);
         }
         
         .instruction {
             position: absolute;
-            bottom: 60px;
+            bottom: 40px;
             left: 0;
             right: 0;
             text-align: center;
@@ -120,8 +117,8 @@
             height: 60%;
             background: white;
             border-radius: 24px 24px 0 0;
-            padding: 32px 20px 20px;
-            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
+            padding: 25px 20px 20px;
+            box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.15);
             transition: bottom 0.4s cubic-bezier(0.22, 1, 0.36, 1);
             z-index: 20;
             overflow-y: auto;
@@ -135,14 +132,15 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
             border-bottom: 1px solid #eee;
         }
         
         .settings-header h2 {
             font-size: 22px;
             font-weight: 700;
+            color: #5e72e4;
         }
         
         .close-btn {
@@ -175,14 +173,16 @@
             font-size: 18px;
             outline: none;
             transition: border-color 0.3s;
+            background: #f8f9ff;
         }
         
         .input-group input:focus {
             border-color: #5e72e4;
+            box-shadow: 0 0 0 2px rgba(94, 114, 228, 0.2);
         }
         
         .save-btn {
-            background: #5e72e4;
+            background: linear-gradient(to right, #5e72e4, #825ee4);
             color: white;
             border: none;
             border-radius: 12px;
@@ -191,13 +191,13 @@
             font-weight: 600;
             width: 100%;
             cursor: pointer;
-            transition: background 0.3s;
-            box-shadow: 0 4px 10px rgba(94, 114, 228, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(94, 114, 228, 0.3);
         }
         
         .save-btn:active {
-            background: #4a5cd4;
-            transform: translateY(1px);
+            transform: translateY(2px);
+            box-shadow: 0 2px 8px rgba(94, 114, 228, 0.3);
         }
         
         .panel-overlay {
@@ -205,14 +205,16 @@
             bottom: 0;
             left: 0;
             right: 0;
-            height: 0;
-            background: rgba(0, 0, 0, 0.3);
-            transition: height 0.4s ease, background 0.4s ease;
+            height: 100%;
+            background: rgba(0, 0, 0, 0);
+            transition: background 0.4s ease;
             z-index: 15;
+            pointer-events: none;
         }
         
         .panel-overlay.show {
-            height: 60%;
+            background: rgba(0, 0, 0, 0.4);
+            pointer-events: auto;
         }
         
         .notification {
@@ -227,21 +229,20 @@
             font-size: 16px;
             z-index: 200;
             transition: transform 0.4s ease;
+            backdrop-filter: blur(10px);
         }
         
         .notification.show {
             transform: translateX(-50%) translateY(0);
         }
         
-        footer {
-            padding: 20px;
+        .add-to-home {
             text-align: center;
             color: #888;
             font-size: 14px;
-            border-top: 1px solid rgba(0, 0, 0, 0.05);
-            background: rgba(255, 255, 255, 0.95);
-            position: relative;
-            z-index: 2;
+            margin-top: 15px;
+            padding: 10px;
+            border-top: 1px solid #eee;
         }
         
         @media (max-height: 700px) {
@@ -252,17 +253,14 @@
                 height: 70%;
                 bottom: -70%;
             }
-            .panel-overlay.show {
-                height: 70%;
-            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>随机数生成器</h1>
-        </header>
+        <div class="app-header">
+            <div class="app-title">随机数生成器</div>
+        </div>
         
         <div class="main-content">
             <div class="random-number" id="randomNumber">42</div>
@@ -272,8 +270,9 @@
                 <span>-</span>
                 <span id="maxValue">100</span>
             </div>
+            
             <div class="instruction">
-                点击屏幕刷新数字 • 上滑打开设置
+                <i class="fas fa-hand-pointer"></i> 点击屏幕刷新 • <i class="fas fa-arrow-up"></i> 上滑打开设置
             </div>
         </div>
         
@@ -281,26 +280,28 @@
         
         <div class="settings-panel" id="settingsPanel">
             <div class="settings-header">
-                <h2>设置范围</h2>
+                <h2><i class="fas fa-sliders-h"></i> 设置范围</h2>
                 <button class="close-btn" id="closeSettings">完成</button>
             </div>
             
             <div class="input-group">
-                <label for="minInput">最小值</label>
+                <label for="minInput"><i class="fas fa-arrow-down"></i> 最小值</label>
                 <input type="number" id="minInput" value="1">
             </div>
             
             <div class="input-group">
-                <label for="maxInput">最大值</label>
+                <label for="maxInput"><i class="fas fa-arrow-up"></i> 最大值</label>
                 <input type="number" id="maxInput" value="100">
             </div>
             
-            <button class="save-btn" id="saveSettings">保存设置</button>
+            <button class="save-btn" id="saveSettings">
+                <i class="fas fa-save"></i> 保存设置
+            </button>
+            
+            <div class="add-to-home">
+                <i class="fas fa-mobile-alt"></i> 可添加到主屏幕使用
+            </div>
         </div>
-        
-        <footer>
-            <p>添加到主屏幕使用更便捷</p>
-        </footer>
     </div>
     
     <div class="notification" id="notification">设置已保存</div>
@@ -332,6 +333,12 @@
             // 生成并显示随机数
             const randomNum = Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue;
             randomNumberEl.textContent = randomNum;
+        }
+        
+        // 更新范围显示
+        function updateRangeDisplay() {
+            minValueEl.textContent = minValue;
+            maxValueEl.textContent = maxValue;
         }
         
         // 初始化页面
@@ -423,12 +430,6 @@
             
             // 显示成功通知
             showNotification('设置已保存');
-        }
-        
-        // 更新范围显示
-        function updateRangeDisplay() {
-            minValueEl.textContent = minValue;
-            maxValueEl.textContent = maxValue;
         }
         
         // 显示通知
