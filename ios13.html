@@ -570,6 +570,19 @@
             // 显示成功通知
             showNotification('设置已保存');
         }
+
+                
+        // 检测是否在PWA模式中运行
+        function checkPWA() {
+            // 检测是否在独立模式中运行（添加到主屏幕）
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                                window.navigator.standalone;
+            
+            // 如果是在PWA模式中，隐藏添加到主屏幕提示
+            if (isStandalone) {
+                addToHomePrompt.style.display = 'none';
+            }
+        }
         
         // 显示通知
         function showNotification(message) {
