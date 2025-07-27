@@ -3,332 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>PWA手势识别 - iOS 13兼容版</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon.png">
+    <title>极简手势识别</title>
     <style>
-        * {
+        body {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            touch-action: none; /* 禁用默认触摸行为 */
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            color: white;
+            width: 100vw;
             height: 100vh;
+            background-color: #000;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 20px;
-            position: relative;
+            touch-action: none;
         }
         
-        .header {
-            margin-bottom: 30px;
-        }
-        
-        h1 {
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        .subtitle {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            max-width: 500px;
-            line-height: 1.5;
-        }
-        
-        .gesture-area {
-            width: 280px;
-            height: 280px;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            margin: 20px 0 40px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .gesture-area::before {
-            content: '';
+        .gesture-feedback {
             position: absolute;
-            width: 150%;
-            height: 150%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            animation: rotate 20s linear infinite;
-        }
-        
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
-        .gesture-text {
-            font-size: 3.5rem;
+            font-size: 36px;
             font-weight: bold;
-            z-index: 10;
-            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            transition: transform 0.3s ease;
-        }
-        
-        .gesture-hint {
-            margin-top: 15px;
-            font-size: 1.1rem;
-            opacity: 0.7;
-            z-index: 10;
-        }
-        
-        .instructions {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 20px;
-            max-width: 500px;
-            margin-top: 20px;
-        }
-        
-        .instructions h2 {
-            font-size: 1.4rem;
-            margin-bottom: 15px;
-        }
-        
-        .instruction-item {
-            display: flex;
-            align-items: center;
-            margin: 12px 0;
-            font-size: 1rem;
-        }
-        
-        .icon {
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-right: 15px;
-            font-size: 1.4rem;
-        }
-        
-        .counter {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-            padding: 8px 15px;
-            font-size: 0.9rem;
-        }
-        
-        .feedback {
-            position: absolute;
-            font-size: 2rem;
-            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
             opacity: 0;
             pointer-events: none;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            z-index: 20;
-            transition: opacity 0.3s;
+            z-index: 100;
+            transition: opacity 0.3s, transform 0.8s;
+            transform: translateY(0);
         }
         
-        .status {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-            padding: 8px 15px;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
+        .click-feedback {
+            color: #4CAF50;
         }
         
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #4caf50;
-            margin-right: 8px;
-            box-shadow: 0 0 8px #4caf50;
-        }
-        
-        /* 响应式设计 */
-        @media (max-width: 500px) {
-            h1 { font-size: 1.8rem; }
-            .gesture-area { width: 250px; height: 250px; }
-            .gesture-text { font-size: 3rem; }
+        .swipe-feedback {
+            color: #2196F3;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>PWA手势识别</h1>
-        <p class="subtitle">兼容iOS 13的点击与上滑手势检测，解决页面跟随滚动问题</p>
-    </div>
-    
-    <div class="gesture-area" id="gestureArea">
-        <div class="gesture-text" id="gestureText">👆</div>
-        <div class="gesture-hint">在此区域点击或上滑</div>
-    </div>
-    
-    <div class="instructions">
-        <h2>使用说明</h2>
-        <div class="instruction-item">
-            <div class="icon">💡</div>
-            <div>点击中间区域 - 显示"点击"反馈</div>
-        </div>
-        <div class="instruction-item">
-            <div class="icon">🖐️</div>
-            <div>从下向上滑动 - 显示"上滑"反馈</div>
-        </div>
-        <div class="instruction-item">
-            <div class="icon">✅</div>
-            <div>已解决iOS 13页面跟随滚动问题</div>
-        </div>
-    </div>
-    
-    <div class="counter">
-        点击: <span id="clickCount">0</span> | 
-        上滑: <span id="swipeCount">0</span>
-    </div>
-    
-    <div class="status">
-        <div class="status-dot"></div>
-        <span>iOS 13兼容模式</span>
-    </div>
-    
     <script>
-        // 获取DOM元素
-        const gestureArea = document.getElementById('gestureArea');
-        const gestureText = document.getElementById('gestureText');
-        const clickCountEl = document.getElementById('clickCount');
-        const swipeCountEl = document.getElementById('swipeCount');
-        
-        // 初始化计数器
-        let clickCount = 0;
-        let swipeCount = 0;
-        
-        // 触摸开始位置
-        let touchStartY = 0;
-        let touchStartTime = 0;
-        
-        // 显示反馈动画
-        function showFeedback(text, x, y) {
+        // 创建手势反馈元素
+        function createFeedbackElement(text, x, y, isClick) {
             const feedback = document.createElement('div');
-            feedback.className = 'feedback';
+            feedback.className = `gesture-feedback ${isClick ? 'click-feedback' : 'swipe-feedback'}`;
             feedback.textContent = text;
             feedback.style.left = `${x}px`;
             feedback.style.top = `${y}px`;
-            feedback.style.opacity = '1';
             
             document.body.appendChild(feedback);
             
-            // 动画效果
+            // 显示反馈
             setTimeout(() => {
-                feedback.style.transform = 'translateY(-30px)';
-                feedback.style.opacity = '0';
-            }, 100);
+                feedback.style.opacity = '1';
+                feedback.style.transform = 'translateY(-80px)';
+            }, 10);
             
             // 移除元素
             setTimeout(() => {
-                document.body.removeChild(feedback);
+                feedback.style.opacity = '0';
+                setTimeout(() => {
+                    document.body.removeChild(feedback);
+                }, 300);
             }, 1000);
         }
         
+        // 触摸变量
+        let touchStartY = 0;
+        let touchStartTime = 0;
+        
         // 触摸开始事件
-        gestureArea.addEventListener('touchstart', function(e) {
+        document.addEventListener('touchstart', function(e) {
             touchStartY = e.touches[0].clientY;
             touchStartTime = new Date().getTime();
-            
-            // 添加按压效果
-            gestureArea.style.transform = 'scale(0.95)';
-            gestureArea.style.opacity = '0.9';
         });
         
         // 触摸移动事件 - 阻止默认行为防止页面滚动
-        gestureArea.addEventListener('touchmove', function(e) {
+        document.addEventListener('touchmove', function(e) {
             e.preventDefault();
         }, { passive: false });
         
         // 触摸结束事件
-        gestureArea.addEventListener('touchend', function(e) {
+        document.addEventListener('touchend', function(e) {
             const touchEndY = e.changedTouches[0].clientY;
             const touchEndTime = new Date().getTime();
             const timeDiff = touchEndTime - touchStartTime;
             
-            // 移除按压效果
-            gestureArea.style.transform = 'scale(1)';
-            gestureArea.style.opacity = '1';
-            
-            // 计算滑动距离和时间
+            // 计算滑动距离
             const distanceY = touchEndY - touchStartY;
             const isSwipe = Math.abs(distanceY) > 10; // 滑动阈值
             
-            // 如果是上滑手势 (向上滑动且距离足够)
+            const x = e.changedTouches[0].clientX;
+            const y = e.changedTouches[0].clientY;
+            
+            // 上滑手势
             if (isSwipe && distanceY < 0) {
-                swipeCount++;
-                swipeCountEl.textContent = swipeCount;
-                gestureText.textContent = '↑';
-                
-                // 显示反馈
-                const rect = gestureArea.getBoundingClientRect();
-                const x = rect.left + rect.width/2;
-                const y = rect.top + rect.height/2;
-                showFeedback('上滑', x, y);
+                createFeedbackElement('上滑', x, y, false);
             } 
-            // 如果是点击手势 (移动距离小且时间短)
+            // 点击手势
             else if (!isSwipe && timeDiff < 300) {
-                clickCount++;
-                clickCountEl.textContent = clickCount;
-                gestureText.textContent = '●';
-                
-                // 显示反馈
-                const rect = gestureArea.getBoundingClientRect();
-                const x = rect.left + rect.width/2;
-                const y = rect.top + rect.height/2;
-                showFeedback('点击', x, y);
+                createFeedbackElement('点击', x, y, true);
             }
         });
         
         // 防止iOS橡皮筋效果
-        document.body.addEventListener('touchmove', function(e) {
+        document.addEventListener('touchmove', function(e) {
             if (e.scale !== 1) {
                 e.preventDefault();
             }
         }, { passive: false });
         
-        // 注册Service Worker (PWA功能)
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').then(registration => {
-                    console.log('ServiceWorker注册成功:', registration.scope);
-                }).catch(error => {
-                    console.log('ServiceWorker注册失败:', error);
-                });
-            });
-        }
-        
-        // 添加到主屏幕提示
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            console.log('PWA可安装');
+        // 鼠标点击事件（用于桌面测试）
+        document.addEventListener('click', function(e) {
+            createFeedbackElement('点击', e.clientX, e.clientY, true);
         });
     </script>
 </body>
