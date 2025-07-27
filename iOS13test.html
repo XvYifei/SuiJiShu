@@ -3,16 +3,236 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>极简手势识别</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>随机数生成器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
-            width: 100vw;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
             height: 100vh;
-            background-color: #000;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            color: #333;
+            position: relative;
             touch-action: none;
+        }
+        
+        .container {
+            width: 100%;
+            height: 100vh;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        .app-header {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+        }
+        
+        .app-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #5e72e4;
+            text-shadow: 0 2px 4px rgba(94, 114, 228, 0.2);
+        }
+        
+        .random-number {
+            font-size: 96px;
+            font-weight: 800;
+            color: #5e72e4;
+            margin: 20px 0;
+            text-shadow: 0 4px 10px rgba(94, 114, 228, 0.2);
+            position: relative;
+            z-index: 2;
+        }
+        
+        .animate-number {
+            animation: pulse 0.5s ease;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .range-display {
+            background: rgba(94, 114, 228, 0.1);
+            padding: 12px 24px;
+            border-radius: 50px;
+            margin-top: 20px;
+            font-size: 16px;
+            color: #5e72e4;
+            font-weight: 500;
+            display: flex;
+            gap: 10px;
+            position: relative;
+            z-index: 2;
+            backdrop-filter: blur(5px);
+        }
+        
+        .instruction {
+            position: absolute;
+            bottom: 40px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: #888;
+            font-size: 15px;
+            padding: 0 20px;
+            z-index: 2;
+        }
+        
+        .settings-panel {
+            position: fixed;
+            bottom: -60%;
+            left: 0;
+            right: 0;
+            height: 60%;
+            background: white;
+            border-radius: 24px 24px 0 0;
+            padding: 25px 20px 20px;
+            box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.15);
+            transition: bottom 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            z-index: 20;
+            overflow-y: auto;
+        }
+        
+        .settings-panel.show {
+            bottom: 0;
+        }
+        
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .settings-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #5e72e4;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: #007AFF;
+            font-weight: 500;
+            padding: 8px 16px;
+            cursor: pointer;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 18px;
+            outline: none;
+            background: #f8f9ff;
+        }
+        
+        .input-group input:focus {
+            border-color: #5e72e4;
+            box-shadow: 0 0 0 2px rgba(94, 114, 228, 0.2);
+        }
+        
+        .save-btn {
+            background: linear-gradient(to right, #5e72e4, #825ee4);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 18px;
+            font-size: 18px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(94, 114, 228, 0.3);
+        }
+        
+        .save-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 8px rgba(94, 114, 228, 0.3);
+        }
+        
+        .panel-overlay {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            background: rgba(0, 0, 0, 0);
+            transition: background 0.4s ease;
+            z-index: 15;
+            pointer-events: none;
+        }
+        
+        .panel-overlay.show {
+            background: rgba(0, 0, 0, 0.4);
+            pointer-events: auto;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            z-index: 200;
+            transition: transform 0.4s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .notification.show {
+            transform: translateX(-50%) translateY(0);
         }
         
         .gesture-feedback {
@@ -35,10 +255,117 @@
         .swipe-feedback {
             color: #2196F3;
         }
+        
+        @media (max-height: 700px) {
+            .random-number {
+                font-size: 80px;
+            }
+            .settings-panel {
+                height: 70%;
+                bottom: -70%;
+            }
+        }
+        
+        @media all and (display-mode: standalone) {
+            body {
+                overflow: hidden;
+            }
+            .app-header {
+                top: 40px;
+            }
+            .instruction {
+                bottom: 60px;
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="container">
+        <div class="app-header">
+            <div class="app-title">随机数生成器</div>
+        </div>
+        
+        <div class="main-content">
+            <div class="random-number" id="randomNumber">42</div>
+            <div class="range-display">
+                <span>范围：</span>
+                <span id="minValue">1</span>
+                <span>-</span>
+                <span id="maxValue">100</span>
+            </div>
+            
+            <div class="instruction">
+                <i class="fas fa-hand-pointer"></i> 点击屏幕刷新 • <i class="fas fa-arrow-up"></i> 上滑打开设置
+            </div>
+        </div>
+        
+        <div class="panel-overlay" id="panelOverlay"></div>
+        
+        <div class="settings-panel" id="settingsPanel">
+            <div class="settings-header">
+                <h2><i class="fas fa-sliders-h"></i> 设置范围</h2>
+                <button class="close-btn" id="closeSettings">完成</button>
+            </div>
+            
+            <div class="input-group">
+                <label for="minInput"><i class="fas fa-arrow-down"></i> 最小值</label>
+                <input type="number" id="minInput" value="1">
+            </div>
+            
+            <div class="input-group">
+                <label for="maxInput"><i class="fas fa-arrow-up"></i> 最大值</label>
+                <input type="number" id="maxInput" value="100">
+            </div>
+            
+            <button class="save-btn" id="saveSettings">
+                <i class="fas fa-save"></i> 保存设置
+            </button>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification">设置已保存</div>
+    
     <script>
+        // 当前设置
+        let minValue = 1;
+        let maxValue = 100;
+        
+        // 触摸状态跟踪变量
+        let touchStartY = 0;
+        let touchEndY = 0;
+        let isSwiping = false;
+        
+        // DOM元素
+        const randomNumberEl = document.getElementById('randomNumber');
+        const minValueEl = document.getElementById('minValue');
+        const maxValueEl = document.getElementById('maxValue');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const panelOverlay = document.getElementById('panelOverlay');
+        const closeSettingsBtn = document.getElementById('closeSettings');
+        const saveSettingsBtn = document.getElementById('saveSettings');
+        const minInput = document.getElementById('minInput');
+        const maxInput = document.getElementById('maxInput');
+        const notification = document.getElementById('notification');
+        const body = document.body;
+        
+        // 生成随机数
+        function generateRandomNumber() {
+            // 添加动画效果
+            randomNumberEl.classList.remove('animate-number');
+            void randomNumberEl.offsetWidth; // 触发重排
+            randomNumberEl.classList.add('animate-number');
+            
+            // 生成并显示随机数
+            const randomNum = Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue;
+            randomNumberEl.textContent = randomNum;
+        }
+        
+        // 更新范围显示
+        function updateRangeDisplay() {
+            minValueEl.textContent = minValue;
+            maxValueEl.textContent = maxValue;
+        }
+        
         // 创建手势反馈元素
         function createFeedbackElement(text, x, y, isClick) {
             const feedback = document.createElement('div');
@@ -64,55 +391,126 @@
             }, 1000);
         }
         
-        // 触摸变量
-        let touchStartY = 0;
-        let touchStartTime = 0;
-        
-        // 触摸开始事件
-        document.addEventListener('touchstart', function(e) {
-            touchStartY = e.touches[0].clientY;
-            touchStartTime = new Date().getTime();
-        });
-        
-        // 触摸移动事件 - 阻止默认行为防止页面滚动
-        document.addEventListener('touchmove', function(e) {
-            e.preventDefault();
-        }, { passive: false });
-        
-        // 触摸结束事件
-        document.addEventListener('touchend', function(e) {
-            const touchEndY = e.changedTouches[0].clientY;
-            const touchEndTime = new Date().getTime();
-            const timeDiff = touchEndTime - touchStartTime;
+        // 初始化页面
+        function init() {
+            generateRandomNumber();
+            updateRangeDisplay();
             
-            // 计算滑动距离
-            const distanceY = touchEndY - touchStartY;
-            const isSwipe = Math.abs(distanceY) > 10; // 滑动阈值
+            // 触摸事件处理
+            document.body.addEventListener('touchstart', function(e) {
+                touchStartY = e.touches[0].clientY;
+                isSwiping = false;
+            });
             
-            const x = e.changedTouches[0].clientX;
-            const y = e.changedTouches[0].clientY;
+            document.body.addEventListener('touchmove', function(e) {
+                const touchY = e.touches[0].clientY;
+                const diffY = touchStartY - touchY;
+                
+                // 检测到向上滑动（diffY > 0 表示向上）
+                if (diffY > 30 && !isSwiping && !settingsPanel.classList.contains('show')) {
+                    isSwiping = true;
+                    createFeedbackElement('上滑', e.touches[0].clientX, e.touches[0].clientY, false);
+                    openSettings();
+                }
+            });
             
-            // 上滑手势
-            if (isSwipe && distanceY < 0) {
-                createFeedbackElement('上滑', x, y, false);
-            } 
-            // 点击手势
-            else if (!isSwipe && timeDiff < 300) {
-                createFeedbackElement('点击', x, y, true);
+            document.body.addEventListener('touchend', function(e) {
+                const touchEndY = e.changedTouches[0].clientY;
+                const touchEndTime = new Date().getTime();
+                
+                // 计算滑动距离
+                const distanceY = touchEndY - touchStartY;
+                const isSwipe = Math.abs(distanceY) > 10;
+                
+                const x = e.changedTouches[0].clientX;
+                const y = e.changedTouches[0].clientY;
+                
+                // 点击手势
+                if (!isSwiping && !isSwipe && !settingsPanel.classList.contains('show')) {
+                    createFeedbackElement('点击', x, y, true);
+                    generateRandomNumber();
+                }
+                isSwiping = false;
+            });
+            
+            // 鼠标点击事件（用于桌面测试）
+            document.body.addEventListener('click', function(e) {
+                if (!settingsPanel.classList.contains('show')) {
+                    createFeedbackElement('点击', e.clientX, e.clientY, true);
+                    generateRandomNumber();
+                }
+            });
+            
+            // 设置面板相关事件
+            closeSettingsBtn.addEventListener('click', closeSettings);
+            saveSettingsBtn.addEventListener('click', saveSettings);
+            panelOverlay.addEventListener('click', closeSettings);
+        }
+        
+        // 打开设置面板
+        function openSettings() {
+            minInput.value = minValue;
+            maxInput.value = maxValue;
+            settingsPanel.classList.add('show');
+            panelOverlay.classList.add('show');
+        }
+        
+        // 关闭设置面板
+        function closeSettings() {
+            settingsPanel.classList.remove('show');
+            panelOverlay.classList.remove('show');
+        }
+        
+        // 保存设置
+        function saveSettings() {
+            let newMin = parseInt(minInput.value);
+            let newMax = parseInt(maxInput.value);
+            
+            // 验证输入
+            if (isNaN(newMin) || isNaN(newMax)) {
+                showNotification('请输入有效数字');
+                return;
             }
-        });
-        
-        // 防止iOS橡皮筋效果
-        document.addEventListener('touchmove', function(e) {
-            if (e.scale !== 1) {
-                e.preventDefault();
+            
+            if (newMin >= newMax) {
+                showNotification('最小值必须小于最大值');
+                return;
             }
-        }, { passive: false });
+            
+            if (newMax - newMin > 1000000) {
+                showNotification('范围过大，请减小差值');
+                return;
+            }
+            
+            // 更新设置
+            minValue = newMin;
+            maxValue = newMax;
+            
+            // 更新显示
+            updateRangeDisplay();
+            
+            // 重新生成随机数
+            generateRandomNumber();
+            
+            // 关闭面板
+            closeSettings();
+            
+            // 显示成功通知
+            showNotification('设置已保存');
+        }
         
-        // 鼠标点击事件（用于桌面测试）
-        document.addEventListener('click', function(e) {
-            createFeedbackElement('点击', e.clientX, e.clientY, true);
-        });
+        // 显示通知
+        function showNotification(message) {
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 2000);
+        }
+        
+        // 初始化应用
+        init();
     </script>
 </body>
 </html>
