@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#4a76d0">
-    <title>PWA缓存功能测试</title>
+    <title>PWA缓存功能测试 - 增强版</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -24,7 +25,7 @@
         }
         
         .container {
-            max-width: 800px;
+            max-width: 1000px;
             width: 100%;
             background: white;
             border-radius: 16px;
@@ -37,6 +38,7 @@
             color: white;
             padding: 30px 20px;
             text-align: center;
+            position: relative;
         }
         
         h1 {
@@ -82,7 +84,7 @@
             margin-top: 30px;
         }
         
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
             .test-section {
                 grid-template-columns: 1fr;
             }
@@ -235,10 +237,11 @@
             font-size: 14px;
         }
         
+        /* 设备信息部分增强 */
         .device-info {
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
             margin-top: 20px;
             padding: 15px;
             background: #edf2f7;
@@ -246,15 +249,119 @@
             font-size: 14px;
         }
         
+        .info-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .info-card h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+        }
+        
         .info-item {
-            margin: 5px 10px;
+            margin: 8px 0;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-value {
+            font-weight: 600;
+        }
+        
+        /* 缓存信息卡片 */
+        .cache-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .cache-info-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .cache-info-card h3 {
+            color: #4a76d0;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #4a76d0;
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .online-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #2ecc71;
+            margin-right: 5px;
+        }
+        
+        .offline-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #e74c3c;
+            margin-right: 5px;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 600px) {
+            .test-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .device-info, .cache-info {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 26px;
+            }
+            
+            .card h2 {
+                font-size: 20px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-mobile-alt"></i> PWA缓存功能测试</h1>
+            <h1><i class="fas fa-mobile-alt"></i> PWA缓存功能测试 - 增强版</h1>
             <p class="subtitle">测试Service Worker缓存功能，验证缓存创建、读取和删除操作</p>
         </header>
         
@@ -313,16 +420,117 @@
                 </div>
             </div>
             
+            <!-- 新增缓存信息卡片 -->
+            <div class="card">
+                <h2><i class="fas fa-database"></i> 缓存状态信息</h2>
+                <div class="cache-info">
+                    <div class="cache-info-card">
+                        <h3><i class="fas fa-microchip"></i> Service Worker 状态</h3>
+                        <div class="info-item">
+                            <span>注册状态:</span>
+                            <span id="swStatusInfo" class="info-value">未注册</span>
+                        </div>
+                        <div class="info-item">
+                            <span>作用域:</span>
+                            <span id="swScope" class="info-value">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span>当前状态:</span>
+                            <span id="swState" class="info-value">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="cache-info-card">
+                        <h3><i class="fas fa-database"></i> 缓存信息</h3>
+                        <div class="info-item">
+                            <span>缓存名称:</span>
+                            <span id="cacheName" class="info-value">pwa-cache-test-v1</span>
+                        </div>
+                        <div class="info-item">
+                            <span>缓存大小:</span>
+                            <span id="cacheSize" class="info-value">0 KB</span>
+                        </div>
+                        <div class="info-item">
+                            <span>缓存文件数:</span>
+                            <span id="cacheCount" class="info-value">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="cache-info-card">
+                        <h3><i class="fas fa-network-wired"></i> 网络状态</h3>
+                        <div class="info-item">
+                            <span>当前状态:</span>
+                            <span id="networkStatus" class="info-value">
+                                <span class="online-indicator"></span> 在线
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <span>最后更新:</span>
+                            <span id="lastUpdate" class="info-value">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span>离线支持:</span>
+                            <span id="offlineSupport" class="info-value">未测试</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 增强的设备信息部分 -->
             <div class="device-info">
-                <div class="info-item">设备: <span id="deviceType">检测中...</span></div>
-                <div class="info-item">浏览器: <span id="browserInfo">检测中...</span></div>
-                <div class="info-item">Service Worker支持: <span id="swSupport">检测中...</span></div>
-                <div class="info-item">缓存API支持: <span id="cacheSupport">检测中...</span></div>
+                <div class="info-card">
+                    <h4><i class="fas fa-desktop"></i> 设备信息</h4>
+                    <div class="info-item">
+                        <span>设备类型:</span>
+                        <span id="deviceType" class="info-value">检测中...</span>
+                    </div>
+                    <div class="info-item">
+                        <span>操作系统:</span>
+                        <span id="osInfo" class="info-value">检测中...</span>
+                    </div>
+                    <div class="info-item">
+                        <span>屏幕尺寸:</span>
+                        <span id="screenSize" class="info-value">检测中...</span>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h4><i class="fas fa-globe"></i> 浏览器信息</h4>
+                    <div class="info-item">
+                        <span>浏览器:</span>
+                        <span id="browserInfo" class="info-value">检测中...</span>
+                    </div>
+                    <div class="info-item">
+                        <span>版本:</span>
+                        <span id="browserVersion" class="info-value">检测中...</span>
+                    </div>
+                    <div class="info-item">
+                        <span>用户代理:</span>
+                        <span id="userAgent" class="info-value">检测中...</span>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h4><i class="fas fa-cogs"></i> 功能支持</h4>
+                    <div class="info-item">
+                        <span>Service Worker:</span>
+                        <span id="swSupport" class="info-value">检测中...</span>
+                    </div>
+                    <div class="info-item">
+                        <span>缓存API:</span>
+                        <span id="cacheSupport" class="info-value">检测中...</span>
+                    </div>
+                    <div class="info-item">
+                        <span>HTTPS:</span>
+                        <span id="httpsSupport" class="info-value">检测中...</span>
+                    </div>
+                </div>
             </div>
         </div>
         
         <footer>
             <p>© 2023 PWA缓存功能测试工具 | 用于诊断和解决PWA缓存问题</p>
+            <p>增强版包含设备信息与缓存状态监控</p>
         </footer>
     </div>
     
@@ -336,16 +544,32 @@
         const cacheStatus = document.getElementById('cacheStatus');
         const clearResult = document.getElementById('clearResult');
         const logContainer = document.getElementById('logContainer');
+        
+        // 新增元素
         const deviceType = document.getElementById('deviceType');
+        const osInfo = document.getElementById('osInfo');
+        const screenSize = document.getElementById('screenSize');
         const browserInfo = document.getElementById('browserInfo');
+        const browserVersion = document.getElementById('browserVersion');
+        const userAgent = document.getElementById('userAgent');
         const swSupport = document.getElementById('swSupport');
         const cacheSupport = document.getElementById('cacheSupport');
+        const httpsSupport = document.getElementById('httpsSupport');
+        const swStatusInfo = document.getElementById('swStatusInfo');
+        const swScope = document.getElementById('swScope');
+        const swState = document.getElementById('swState');
+        const cacheName = document.getElementById('cacheName');
+        const cacheSize = document.getElementById('cacheSize');
+        const cacheCount = document.getElementById('cacheCount');
+        const networkStatus = document.getElementById('networkStatus');
+        const lastUpdate = document.getElementById('lastUpdate');
+        const offlineSupport = document.getElementById('offlineSupport');
         
         // 缓存名称
         const CACHE_NAME = 'pwa-cache-test-v1';
         const urlsToCache = [
             location.href,
-            '/SuiJiShu/'
+            '/'
         ];
         
         // 添加日志
@@ -363,15 +587,108 @@
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
             deviceType.textContent = isMobile ? '移动设备' : '桌面设备';
             
-            // 浏览器信息
-            browserInfo.textContent = navigator.userAgent.split(') ')[0].split(' (')[1] || navigator.userAgent.substring(0, 50);
+            // 操作系统
+            const osMap = {
+                'Windows': /Windows NT/,
+                'Mac OS': /Macintosh/,
+                'Linux': /Linux/,
+                'Android': /Android/,
+                'iOS': /iPhone|iPad|iPod/
+            };
             
-            // 功能支持检测
+            let detectedOS = '未知操作系统';
+            for (const [os, regex] of Object.entries(osMap)) {
+                if (regex.test(navigator.userAgent)) {
+                    detectedOS = os;
+                    break;
+                }
+            }
+            osInfo.textContent = detectedOS;
+            
+            // 屏幕尺寸
+            screenSize.textContent = `${window.screen.width} × ${window.screen.height} 像素`;
+            
+            // 浏览器信息
+            const browserMap = {
+                'Chrome': /Chrome\//,
+                'Firefox': /Firefox\//,
+                'Safari': /Safari\//,
+                'Edge': /Edg\//,
+                'Opera': /OPR\//,
+                'Internet Explorer': /Trident\//
+            };
+            
+            let detectedBrowser = '未知浏览器';
+            let version = '未知版本';
+            
+            for (const [browser, regex] of Object.entries(browserMap)) {
+                if (regex.test(navigator.userAgent)) {
+                    detectedBrowser = browser;
+                    const match = navigator.userAgent.match(new RegExp(`${browser}/(\\d+)`));
+                    if (match && match[1]) {
+                        version = match[1];
+                    }
+                    break;
+                }
+            }
+            
+            browserInfo.textContent = detectedBrowser;
+            browserVersion.textContent = version;
+            userAgent.textContent = navigator.userAgent.substring(0, 80) + '...';
+            
+            // 功能支持
             swSupport.textContent = 'serviceWorker' in navigator ? '支持' : '不支持';
             swSupport.style.color = 'serviceWorker' in navigator ? '#2e7d32' : '#c62828';
             
             cacheSupport.textContent = 'caches' in window ? '支持' : '不支持';
             cacheSupport.style.color = 'caches' in window ? '#2e7d32' : '#c62828';
+            
+            httpsSupport.textContent = window.location.protocol === 'https:' ? '是' : '否';
+            httpsSupport.style.color = window.location.protocol === 'https:' ? '#2e7d32' : '#c62828';
+            
+            // 网络状态
+            const networkEl = networkStatus.querySelector('.online-indicator, .offline-indicator');
+            if (networkEl) networkEl.remove();
+            
+            const indicator = document.createElement('span');
+            indicator.className = navigator.onLine ? 'online-indicator' : 'offline-indicator';
+            networkStatus.insertBefore(indicator, networkStatus.firstChild);
+            networkStatus.querySelector('.info-value').textContent = navigator.onLine ? '在线' : '离线';
+            
+            // 最后更新时间
+            lastUpdate.textContent = new Date().toLocaleTimeString();
+        }
+        
+        // 更新缓存信息
+        async function updateCacheInfo() {
+            if ('caches' in window) {
+                try {
+                    const cache = await caches.open(CACHE_NAME);
+                    const keys = await cache.keys();
+                    cacheCount.textContent = keys.length;
+                    
+                    let totalSize = 0;
+                    for (const request of keys) {
+                        const response = await cache.match(request);
+                        if (response) {
+                            const blob = await response.blob();
+                            totalSize += blob.size;
+                        }
+                    }
+                    
+                    const sizeKB = (totalSize / 1024).toFixed(2);
+                    cacheSize.textContent = `${sizeKB} KB`;
+                    offlineSupport.textContent = keys.length > 0 ? '支持' : '不支持';
+                    offlineSupport.style.color = keys.length > 0 ? '#2e7d32' : '#c62828';
+                    
+                    addLog(`缓存信息更新: ${keys.length} 个文件, ${sizeKB} KB`, 'success');
+                } catch (error) {
+                    cacheCount.textContent = '0';
+                    cacheSize.textContent = '0 KB';
+                    offlineSupport.textContent = '错误';
+                    addLog(`更新缓存信息失败: ${error.message}`, 'error');
+                }
+            }
         }
         
         // 注册Service Worker
@@ -381,10 +698,13 @@
                     .then(registration => {
                         swStatus.textContent = '已注册';
                         swStatus.className = 'status active';
+                        swStatusInfo.textContent = '已注册';
+                        swScope.textContent = registration.scope;
                         addLog('Service Worker 注册成功', 'success');
                         
                         // 检查是否已经激活
                         if (registration.active) {
+                            swState.textContent = '已激活';
                             addLog('Service Worker 已激活', 'success');
                         }
                         
@@ -393,6 +713,7 @@
                             const newWorker = registration.installing;
                             
                             newWorker.addEventListener('statechange', () => {
+                                swState.textContent = newWorker.state;
                                 if (newWorker.state === 'activated') {
                                     addLog('Service Worker 已激活', 'success');
                                     checkCacheStatus();
@@ -402,10 +723,12 @@
                     })
                     .catch(error => {
                         swStatus.textContent = '注册失败';
+                        swStatusInfo.textContent = '注册失败';
                         addLog(`Service Worker 注册失败: ${error.message}`, 'error');
                     });
             } else {
                 swStatus.textContent = '不支持';
+                swStatusInfo.textContent = '不支持';
                 addLog('当前浏览器不支持Service Worker', 'error');
             }
         }
@@ -419,6 +742,7 @@
                             cacheStatus.textContent = '已启用';
                             cacheStatus.className = 'status active';
                             addLog('缓存存在，状态为已启用', 'success');
+                            updateCacheInfo();
                         } else {
                             cacheStatus.textContent = '未启用';
                             cacheStatus.className = 'status inactive';
@@ -448,6 +772,11 @@
                             // 更新缓存状态显示
                             cacheStatus.textContent = '未启用';
                             cacheStatus.className = 'status inactive';
+                            
+                            // 更新缓存信息
+                            cacheCount.textContent = '0';
+                            cacheSize.textContent = '0 KB';
+                            offlineSupport.textContent = '未启用';
                         } else {
                             clearResult.textContent = '清除失败';
                             clearResult.className = 'status inactive';
@@ -470,6 +799,9 @@
             updateDeviceInfo();
             addLog('页面初始化完成', 'success');
             
+            // 每30秒更新一次设备信息
+            setInterval(updateDeviceInfo, 30000);
+            
             // 检查是否有激活的Service Worker
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.getRegistration()
@@ -477,6 +809,9 @@
                         if (registration) {
                             swStatus.textContent = '已注册';
                             swStatus.className = 'status active';
+                            swStatusInfo.textContent = '已注册';
+                            swScope.textContent = registration.scope;
+                            swState.textContent = registration.active ? '已激活' : '未激活';
                             addLog('检测到已注册的Service Worker', 'success');
                             checkCacheStatus();
                         }
@@ -488,6 +823,10 @@
             checkCacheBtn.addEventListener('click', checkCacheStatus);
             clearCacheBtn.addEventListener('click', clearAppCache);
             refreshBtn.addEventListener('click', () => location.reload());
+            
+            // 监听网络状态变化
+            window.addEventListener('online', updateDeviceInfo);
+            window.addEventListener('offline', updateDeviceInfo);
         }
         
         // 初始化应用
