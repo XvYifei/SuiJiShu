@@ -761,130 +761,27 @@
             registerServiceWorker();
         }
         
-        // 注册Service Worker
-        function registerServiceWorker() {
-            if ('serviceWorker' in navigator) {
-                const CACHE_NAME = 'randnumber-pwa-v2';
-                const urlsToCache = [
-                    location.href,
-                    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
-                ];
-                
-                const swScript = `
-                    const CACHE_NAME = '${CACHE_NAME}';
-                    const urlsToCache = ${JSON.stringify(urlsToCache)};
+            // 注册Service Worker (使用外部文件)
+    function registerServiceWorker() {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/SuiJiShu/ServiceWorker.js')
+                .then(registration => {
+                    console.log('Service Worker 注册成功:', registration);
                     
-                    // 安装Service Worker并缓存资源
-                    self.addEventListener('install', event => {
-                        console.log('Service Worker 安装中...');
-                        event.waitUntil(
-                            caches.open(CACHE_NAME)
-                                .then(cache => {
-                                    console.log('正在缓存核心资源');
-                                    return cache.addAll(urlsToCache);
-                                })
-                                .then(() => {
-                                    console.log('所有核心资源已缓存');
-                                    return self.skipWaiting();
-                                })
-                        );
-                    });
-                    
-                    // 激活时清理旧缓存
-                    self.addEventListener('activate', event => {
-                        console.log('Service Worker 激活');
-                        event.waitUntil(
-                            caches.keys().then(cacheNames => {
-                                return Promise.all(
-                                    cacheNames.filter(name => name !== CACHE_NAME)
-                                        .map(name => {
-                                            console.log('删除旧缓存: ', name);
-                                            return caches.delete(name);
-                                        })
-                                );
-                            }).then(() => self.clients.claim())
-                        );
-                    });
-                    
-                    // 拦截网络请求
-                    self.addEventListener('fetch', event => {
-                        const requestUrl = new URL(event.request.url);
-                        
-                        // 对于同源请求，使用缓存优先策略
-                        if (requestUrl.origin === location.origin) {
-                            event.respondWith(
-                                caches.match(event.request)
-                                    .then(response => {
-                                        return response || fetch(event.request);
-                                    })
-                            );
-                        }
-                        // 对于字体资源，也使用缓存优先
-                        else if (requestUrl.href.includes('fontawesome') || 
-                                 requestUrl.href.includes('fonts.gstatic')) {
-                            event.respondWith(
-                                caches.match(event.request)
-                                    .then(response => {
-                                        return response || fetch(event.request)
-                                            .then(networkResponse => {
-                                                // 将新资源加入缓存
-                                                caches.open(CACHE_NAME)
-                                                    .then(cache => {
-                                                        cache.put(event.request, networkResponse.clone());
-                                                    });
-                                                return networkResponse;
-                                            });
-                                    })
-                            );
-                        }
-                        // 其他请求直接访问网络
-                        else {
-                            event.respondWith(fetch(event.request));
-                        }
-                    });
-                `;
-                
-                const blob = new Blob([swScript], {type: 'application/javascript'});
-                const swUrl = URL.createObjectURL(blob);
-                
-                navigator.serviceWorker.register(swUrl)
-                    .then(registration => {
-                        console.log('Service Worker 注册成功:', registration);
-                        
-                        // 监听Service Worker状态变化
-                        if (registration.installing) {
-                            registration.installing.onstatechange = function() {
-                                if (this.state === 'activated') {
-                                    console.log('Service Worker 已激活');
-                                    updateCacheStatus('已启用', true);
-                                }
-                            };
-                        }
-                        
-                        // 如果已经有激活的Service Worker
-                        if (registration.active) {
-                            updateCacheStatus('已启用', true);
-                        }
-                        
-                        // 监听更新
-                        registration.addEventListener('updatefound', () => {
-                            const newWorker = registration.installing;
-                            newWorker.addEventListener('statechange', () => {
-                                if (newWorker.state === 'activated') {
-                                    updateCacheStatus('已启用', true);
-                                }
-                            });
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Service Worker 注册失败:', error);
-                        updateCacheStatus('注册失败', false);
-                    });
-            } else {
-                console.log('当前浏览器不支持Service Worker');
-                updateCacheStatus('不支持', false);
-            }
+                    // 检查缓存状态
+                    checkCacheStatus();
+                })
+                .catch(error => {
+                    console.error('Service Worker 注册失败:', error);
+                    cacheStatus.textContent = '未启用';
+                    cacheStatus.className = 'cache-status offline';
+                });
+        } else {
+            console.log('当前浏览器不支持Service Worker');
+            cacheStatus.textContent = '不支持';
+            cacheStatus.className = 'cache-status offline';
         }
+    }
         
         // 更新缓存状态显示
         function updateCacheStatus(text, isActive) {
