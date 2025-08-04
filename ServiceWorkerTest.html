@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Worker注册失败诊断工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2980, #26d0ce);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+        }
+        
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            transform: rotate(30deg);
+        }
+        
+        h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .subtitle {
+            font-size: 18px;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .card {
+            background: #f8f9ff;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, rgba(44, 62, 80, 0.05) 0%, rgba(0,0,0,0) 100%);
+            border-radius: 0 0 0 100%;
+        }
+        
+        .card h2 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 28px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .card h2 i {
+            font-size: 32px;
+            color: #3498db;
+        }
+        
+        .diagnosis-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .diagnosis-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .diagnosis-card:hover {
+            transform: translateY(-7px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .diagnosis-card h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 22px;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            margin: 15px 0;
+            font-size: 18px;
+        }
+        
+        .status.passed {
+            background: rgba(46, 204, 113, 0.15);
+            color: #27ae60;
+        }
+        
+        .status.failed {
+            background: rgba(231, 76, 60, 0.15);
+            color: #c0392b;
+        }
+        
+        .status.warning {
+            background: rgba(241, 196, 15, 0.15);
+            color: #d35400;
+        }
+        
+        .solution {
+            background: #e3f2fd;
+            border-left: 4px solid #3498db;
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+        
+        .solution h4 {
+            color: #2980b9;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .solution ul {
+            padding-left: 25px;
+        }
+        
+        .solution li {
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 14px 32px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px 5px;
+            min-width: 180px;
+            font-size: 18px;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .btn-fix {
+            background: #2ecc71;
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+        
+        .btn-fix:hover {
+            background: #27ae60;
+            box-shadow: 0 8px 20px rgba(46, 204, 113, 0.4);
+        }
+        
+        .btn-retry {
+            background: #f39c12;
+            box-shadow: 0 5px 15px rgba(243, 156, 18, 0.3);
+        }
+        
+        .btn-retry:hover {
+            background: #d35400;
+            box-shadow: 0 8px 20px rgba(243, 156, 18, 0.4);
+        }
+        
+        .test-area {
+            background: #2c3e50;
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 30px;
+            color: white;
+        }
+        
+        .test-area h3 {
+            color: #3498db;
+            margin-bottom: 25px;
+            font-size: 26px;
+            text-align: center;
+        }
+        
+        .test-controls {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .console {
+            background: #1a252f;
+            color: #ecf0f1;
+            border-radius: 8px;
+            padding: 25px;
+            margin-top: 25px;
+            font-family: 'Courier New', monospace;
+            max-height: 300px;
+            overflow-y: auto;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+        
+        .console-title {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            color: #3498db;
+            font-weight: 600;
+            font-size: 18px;
+        }
+        
+        .log-entry {
+            margin-bottom: 12px;
+            padding-left: 15px;
+            border-left: 3px solid #3498db;
+        }
+        
+        .log-entry.success {
+            border-left-color: #2ecc71;
+            color: #2ecc71;
+        }
+        
+        .log-entry.error {
+            border-left-color: #e74c3c;
+            color: #e74c3c;
+        }
+        
+        .log-entry.warning {
+            border-left-color: #f39c12;
+            color: #f39c12;
+        }
+        
+        .log-entry.info {
+            border-left-color: #3498db;
+            color: #3498db;
+        }
+        
+        .device-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+            padding: 20px;
+            background: #edf2f7;
+            border-radius: 12px;
+            font-size: 16px;
+        }
+        
+        .info-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .info-card h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-item {
+            margin: 12px 0;
+            padding-bottom: 12px;
+            border-bottom: 1px dashed #eee;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px;
+            background: #2c3e50;
+            color: #ecf0f1;
+            font-size: 16px;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 28px;
+            }
+            
+            .card h2 {
+                font-size: 24px;
+            }
+            
+            .diagnosis-card h3 {
+                font-size: 20px;
+            }
+            
+            .btn {
+                padding: 12px 24px;
+                min-width: 140px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-bug"></i> Service Worker 注册失败诊断工具</h1>
+            <p class="subtitle">诊断并解决 Service Worker 注册失败的问题 - 获取详细的错误分析及解决方案</p>
+        </header>
+        
+        <div class="content">
+            <div class="card">
+                <h2><i class="fas fa-stethoscope"></i> 问题诊断</h2>
+                <p>我们检测到您的浏览器在注册 Service Worker 时遇到问题。以下是可能的原因分析：</p>
+                
+                <div class="diagnosis-section">
+                    <div class="diagnosis-card">
+                        <h3><i class="fas fa-lock"></i> HTTPS 问题</h3>
+                        <p>Service Worker 需要 HTTPS 连接（localhost 除外）</p>
+                        <p>当前状态: <span id="httpsStatus" class="status">检测中...</span></p>
+                        
+                        <div class="solution">
+                            <h4><i class="fas fa-wrench"></i> 解决方案</h4>
+                            <ul>
+                                <li>确保您的网站通过 HTTPS 提供服务</li>
+                                <li>本地开发时使用 localhost（支持 HTTP）</li>
+                                <li>获取 SSL 证书（如 Let's Encrypt）</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="diagnosis-card">
+                        <h3><i class="fas fa-file-alt"></i> 文件路径问题</h3>
+                        <p>Service Worker 文件路径可能不正确</p>
+                        <p>当前状态: <span id="pathStatus" class="status">检测中...</span></p>
+                        
+                        <div class="solution">
+                            <h4><i class="fas fa-wrench"></i> 解决方案</h4>
+                            <ul>
+                                <li>确保 Service Worker 文件存在于指定路径</li>
+                                <li>使用绝对路径（如 <code>/sw.js</code>）</li>
+                                <li>检查文件路径大小写是否匹配</li>
+                                <li>确认文件扩展名正确（.js）</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="diagnosis-card">
+                        <h3><i class="fas fa-shield-alt"></i> 浏览器支持</h3>
+                        <p>您的浏览器可能不支持 Service Worker</p>
+                        <p>当前状态: <span id="supportStatus" class="status">检测中...</span></p>
+                        
+                        <div class="solution">
+                            <h4><i class="fas fa-wrench"></i> 解决方案</h4>
+                            <ul>
+                                <li>更新浏览器到最新版本</li>
+                                <li>使用现代浏览器（Chrome、Firefox、Edge）</li>
+                                <li>检查浏览器是否启用 Service Worker 支持</li>
+                                <li>在 chrome://flags 启用相关功能</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="diagnosis-card">
+                        <h3><i class="fas fa-ban"></i> 内容安全策略</h3>
+                        <p>内容安全策略(CSP)可能阻止 Service Worker</p>
+                        <p>当前状态: <span id="cspStatus" class="status">检测中...</span></p>
+                        
+                        <div class="solution">
+                            <h4><i class="fas fa-wrench"></i> 解决方案</h4>
+                            <ul>
+                                <li>检查 CSP 头是否允许 Service Worker</li>
+                                <li>添加 <code>worker-src 'self'</code> 到 CSP</li>
+                                <li>添加 <code>script-src 'self' 'unsafe-eval'</code></li>
+                                <li>暂时禁用 CSP 进行测试</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="test-area">
+                    <h3><i class="fas fa-vial"></i> 修复后测试</h3>
+                    <p>应用建议的修复后，点击下方按钮测试 Service Worker 注册：</p>
+                    
+                    <div class="test-controls">
+                        <button id="registerBtn" class="btn btn-fix">
+                            <i class="fas fa-plug"></i> 注册 Service Worker
+                        </button>
+                        <button id="unregisterBtn" class="btn btn-retry">
+                            <i class="fas fa-times-circle"></i> 注销 Service Worker
+                        </button>
+                        <button id="clearCacheBtn" class="btn">
+                            <i class="fas fa-trash-alt"></i> 清除缓存
+                        </button>
+                    </div>
+                    
+                    <div class="console">
+                        <div class="console-title">
+                            <span><i class="fas fa-terminal"></i> 操作日志</span>
+                            <button id="clearLogsBtn" class="btn" style="padding: 5px 10px; font-size: 14px; min-width: auto;">
+                                <i class="fas fa-broom"></i> 清除日志
+                            </button>
+                        </div>
+                        <div id="logContainer"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2><i class="fas fa-info-circle"></i> 设备与浏览器信息</h2>
+                <p>以下信息有助于诊断 Service Worker 注册问题：</p>
+                
+                <div class="device-info">
+                    <div class="info-card">
+                        <h4><i class="fas fa-desktop"></i> 设备信息</h4>
+                        <div class="info-item">设备类型: <span id="deviceType">检测中...</span></div>
+                        <div class="info-item">操作系统: <span id="osInfo">检测中...</span></div>
+                        <div class="info-item">屏幕尺寸: <span id="screenSize">检测中...</span></div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h4><i class="fas fa-globe"></i> 浏览器信息</h4>
+                        <div class="info-item">浏览器: <span id="browserInfo">检测中...</span></div>
+                        <div class="info-item">版本: <span id="browserVersion">检测中...</span></div>
+                        <div class="info-item">用户代理: <span id="userAgent">检测中...</span></div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h4><i class="fas fa-cogs"></i> 功能支持</h4>
+                        <div class="info-item">Service Worker: <span id="swSupport">检测中...</span></div>
+                        <div class="info-item">缓存API: <span id="cacheSupport">检测中...</span></div>
+                        <div class="info-item">HTTPS: <span id="httpsSupport">检测中...</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2023 Service Worker 诊断工具 | 帮助开发者解决 PWA 实现问题</p>
+            <p>遇到问题？参考 <a href="https://developers.google.com/web/fundamentals/primers/service-workers" 
+                style="color: #3498db; text-decoration: none;" target="_blank">Google Service Worker 文档</a></p>
+        </footer>
+    </div>
+    
+    <script>
+        // DOM元素
+        const registerBtn = document.getElementById('registerBtn');
+        const unregisterBtn = document.getElementById('unregisterBtn');
+        const clearCacheBtn = document.getElementById('clearCacheBtn');
+        const clearLogsBtn = document.getElementById('clearLogsBtn');
+        const logContainer = document.getElementById('logContainer');
+        
+        // 诊断元素
+        const httpsStatus = document.getElementById('httpsStatus');
+        const pathStatus = document.getElementById('pathStatus');
+        const supportStatus = document.getElementById('supportStatus');
+        const cspStatus = document.getElementById('cspStatus');
+        
+        // 信息元素
+        const deviceType = document.getElementById('deviceType');
+        const osInfo = document.getElementById('osInfo');
+        const screenSize = document.getElementById('screenSize');
+        const browserInfo = document.getElementById('browserInfo');
+        const browserVersion = document.getElementById('browserVersion');
+        const userAgent = document.getElementById('userAgent');
+        const swSupport = document.getElementById('swSupport');
+        const cacheSupport = document.getElementById('cacheSupport');
+        const httpsSupport = document.getElementById('httpsSupport');
+        
+        // Service Worker 文件路径
+        const SW_PATH = '/sw-diagnostic.js';
+        const CACHE_NAME = 'sw-diagnostic-cache-v1';
+        
+        // 添加日志
+        function addLog(message, type = 'info') {
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        // 更新设备信息
+        function updateDeviceInfo() {
+            // 设备类型
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            deviceType.textContent = isMobile ? '移动设备' : '桌面设备';
+            
+            // 操作系统
+            const osMap = {
+                'Windows': /Windows NT/,
+                'Mac OS': /Macintosh/,
+                'Linux': /Linux/,
+                'Android': /Android/,
+                'iOS': /iPhone|iPad|iPod/
+            };
+            
+            let detectedOS = '未知操作系统';
+            for (const [os, regex] of Object.entries(osMap)) {
+                if (regex.test(navigator.userAgent)) {
+                    detectedOS = os;
+                    break;
+                }
+            }
+            osInfo.textContent = detectedOS;
+            
+            // 屏幕尺寸
+            screenSize.textContent = `${window.screen.width} × ${window.screen.height} 像素`;
+            
+            // 浏览器信息
+            const browserMap = {
+                'Chrome': /Chrome\//,
+                'Firefox': /Firefox\//,
+                'Safari': /Safari\//,
+                'Edge': /Edg\//,
+                'Opera': /OPR\//,
+                'Internet Explorer': /Trident\//
+            };
+            
+            let detectedBrowser = '未知浏览器';
+            let version = '未知版本';
+            
+            for (const [browser, regex] of Object.entries(browserMap)) {
+                if (regex.test(navigator.userAgent)) {
+                    detectedBrowser = browser;
+                    const match = navigator.userAgent.match(new RegExp(`${browser}/(\\d+)`));
+                    if (match && match[1]) {
+                        version = match[1];
+                    }
+                    break;
+                }
+            }
+            
+            browserInfo.textContent = detectedBrowser;
+            browserVersion.textContent = version;
+            userAgent.textContent = navigator.userAgent.substring(0, 80) + '...';
+            
+            // 功能支持
+            swSupport.textContent = 'serviceWorker' in navigator ? '支持' : '不支持';
+            swSupport.style.color = 'serviceWorker' in navigator ? '#27ae60' : '#c0392b';
+            swSupport.style.fontWeight = 'bold';
+            
+            cacheSupport.textContent = 'caches' in window ? '支持' : '不支持';
+            cacheSupport.style.color = 'caches' in window ? '#27ae60' : '#c0392b';
+            cacheSupport.style.fontWeight = 'bold';
+            
+            httpsSupport.textContent = window.location.protocol === 'https:' ? '是' : '否';
+            httpsSupport.style.color = window.location.protocol === 'https:' ? '#27ae60' : '#c0392b';
+            httpsSupport.style.fontWeight = 'bold';
+        }
+        
+        // 运行诊断
+        function runDiagnostics() {
+            // HTTPS 诊断
+            if (window.location.protocol === 'https:' || window.location.hostname === 'localhost') {
+                httpsStatus.textContent = '通过';
+                httpsStatus.className = 'status passed';
+                addLog('HTTPS 检测通过', 'success');
+            } else {
+                httpsStatus.textContent = '失败';
+                httpsStatus.className = 'status failed';
+                addLog('HTTPS 检测失败: Service Worker 需要 HTTPS 或 localhost', 'error');
+            }
+            
+            // 路径诊断
+            fetch(SW_PATH)
+                .then(response => {
+                    if (response.ok) {
+                        pathStatus.textContent = '通过';
+                        pathStatus.className = 'status passed';
+                        addLog('Service Worker 文件路径检测通过', 'success');
+                    } else {
+                        pathStatus.textContent = '失败';
+                        pathStatus.className = 'status failed';
+                        addLog('Service Worker 文件路径检测失败: 文件不存在或不可访问', 'error');
+                    }
+                })
+                .catch(error => {
+                    pathStatus.textContent = '失败';
+                    pathStatus.className = 'status failed';
+                    addLog(`Service Worker 文件路径检测失败: ${error.message}`, 'error');
+                });
+            
+            // 支持诊断
+            if ('serviceWorker' in navigator) {
+                supportStatus.textContent = '通过';
+                supportStatus.className = 'status passed';
+                addLog('浏览器支持检测通过', 'success');
+            } else {
+                supportStatus.textContent = '失败';
+                supportStatus.className = 'status failed';
+                addLog('浏览器支持检测失败: 当前浏览器不支持 Service Worker', 'error');
+            }
+            
+            // CSP 诊断
+            if (document.querySelector('meta[http-equiv="Content-Security-Policy"]')) {
+                cspStatus.textContent = '警告';
+                cspStatus.className = 'status warning';
+                addLog('内容安全策略(CSP)检测: 发现 CSP 设置，可能影响 Service Worker', 'warning');
+            } else {
+                cspStatus.textContent = '通过';
+                cspStatus.className = 'status passed';
+                addLog('内容安全策略(CSP)检测通过', 'success');
+            }
+        }
+        
+        // 注册 Service Worker
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register(SW_PATH)
+                    .then(registration => {
+                        addLog('Service Worker 注册成功!', 'success');
+                        addLog(`作用域: ${registration.scope}`, 'info');
+                        addLog('Service Worker 状态: 安装中...', 'info');
+                        
+                        // 监听状态变化
+                        if (registration.installing) {
+                            registration.installing.addEventListener('statechange', event => {
+                                addLog(`Service Worker 状态: ${event.target.state}`, 'info');
+                                
+                                if (event.target.state === 'activated') {
+                                    addLog('Service Worker 已激活并控制页面', 'success');
+                                }
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        addLog(`Service Worker 注册失败: ${error.message}`, 'error');
+                        addLog('详细错误信息: ' + error, 'error');
+                    });
+            } else {
+                addLog('当前浏览器不支持 Service Worker', 'error');
+            }
+        }
+        
+        // 注销所有 Service Worker
+        function unregisterServiceWorkers() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations()
+                    .then(registrations => {
+                        if (registrations.length === 0) {
+                            addLog('没有找到已注册的 Service Worker', 'info');
+                            return;
+                        }
+                        
+                        addLog(`找到 ${registrations.length} 个 Service Worker，正在注销...`, 'info');
+                        
+                        const unregisterPromises = registrations.map(registration => {
+                            return registration.unregister();
+                        });
+                        
+                        Promise.all(unregisterPromises)
+                            .then(() => {
+                                addLog('所有 Service Worker 已成功注销', 'success');
+                            })
+                            .catch(error => {
+                                addLog('注销 Service Worker 时出错: ' + error, 'error');
+                            });
+                    });
+            } else {
+                addLog('当前浏览器不支持 Service Worker', 'error');
+            }
+        }
+        
+        // 清除缓存
+        function clearCaches() {
+            if ('caches' in window) {
+                caches.keys()
+                    .then(cacheNames => {
+                        if (cacheNames.length === 0) {
+                            addLog('没有找到缓存', 'info');
+                            return;
+                        }
+                        
+                        addLog(`找到 ${cacheNames.length} 个缓存，正在清除...`, 'info');
+                        
+                        const deletePromises = cacheNames.map(cacheName => {
+                            return caches.delete(cacheName);
+                        });
+                        
+                        Promise.all(deletePromises)
+                            .then(() => {
+                                addLog('所有缓存已成功清除', 'success');
+                            })
+                            .catch(error => {
+                                addLog('清除缓存时出错: ' + error, 'error');
+                            });
+                    });
+            } else {
+                addLog('当前浏览器不支持缓存 API', 'error');
+            }
+        }
+        
+        // 初始化页面
+        function init() {
+            updateDeviceInfo();
+            runDiagnostics();
+            addLog('诊断工具已初始化', 'success');
+            addLog('开始 Service Worker 注册问题诊断...', 'info');
+            
+            // 添加事件监听
+            registerBtn.addEventListener('click', registerServiceWorker);
+            unregisterBtn.addEventListener('click', unregisterServiceWorkers);
+            clearCacheBtn.addEventListener('click', clearCaches);
+            clearLogsBtn.addEventListener('click', () => {
+                logContainer.innerHTML = '';
+                addLog('日志已清除', 'info');
+            });
+        }
+        
+        // 初始化应用
+        init();
+    </script>
+</body>
+</html>
