@@ -948,49 +948,6 @@
         
         // 初始化应用
         init();
-
-        // 增强型网络状态检测
-function enhancedOnlineCheck() {
-  // 添加超时检测
-  return new Promise(resolve => {
-    const timeout = setTimeout(() => resolve(false), 1500);
-    
-    fetch('/SuiJiShu/?network-test=' + Date.now(), {
-      method: 'HEAD',
-      cache: 'no-store',
-      mode: 'no-cors'
-    }).then(() => {
-      clearTimeout(timeout);
-      resolve(true);
-    }).catch(() => {
-      clearTimeout(timeout);
-      resolve(false);
-    });
-  });
-}
-
-// 更新网络状态检测函数
-async function updateNetworkStatus() {
-  const wasOnline = isOnline;
-  isOnline = await enhancedOnlineCheck();
-  
-  if (wasOnline !== isOnline) {
-    // 更新缓存面板中的网络状态
-    if (isOnline) {
-      networkState.textContent = '在线';
-      networkState.className = 'cache-status online';
-    } else {
-      networkState.textContent = '离线';
-      networkState.className = 'cache-status offline';
-    }
-    
-    // 添加调试信息
-    console.log(`网络状态变化: ${wasOnline ? "在线" : "离线"} → ${isOnline ? "在线" : "离线"}`);
-  }
-}
-
-// 增加定期检查
-setInterval(updateNetworkStatus, 10000);
     </script>
 </body>
 </html>
