@@ -471,25 +471,33 @@
             border-radius: 20px;
             font-weight: 500;
             margin: 5px 0;
-        }
-        
-        .cache-status.online {
             background: rgba(94, 114, 228, 0.15);
             color: #5e72e4;
         }
         
-        .cache-status.offline {
+        .cache-status.active {
+            background: rgba(52, 168, 83, 0.15);
+            color: #34a853;
+        }
+        
+        .cache-status.inactive {
             background: rgba(234, 67, 53, 0.15);
             color: #ea4335;
         }
         
-        .dark-mode .cache-status.online {
+        .dark-mode .cache-status {
             background: rgba(166, 176, 255, 0.25);
             color: #a6b0ff;
         }
         
-        .dark-mode .cache-status.offline {
+        .dark-mode .cache-status.active {
+            background: rgba(52, 168, 83, 0.25);
+            color: #34a853;
+        }
+        
+        .dark-mode .cache-status.inactive {
             background: rgba(234, 67, 53, 0.25);
+            color: #ea4335;
         }
         
         .cache-buttons {
@@ -535,9 +543,23 @@
             display: none;
             backdrop-filter: blur(3px);
         }
+        
+        .debug-info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            color: white;
+            z-index: 100;
+        }
     </style>
 </head>
 <body>
+    <div class="debug-info">v2.0.1</div>
+    
     <div class="container">
         <div class="main-content">
             <div class="random-number" id="randomNumber">42</div>
@@ -742,12 +764,15 @@
         // 注册Service Worker
         function registerServiceWorker() {
             if ('serviceWorker' in navigator) {
+                const CACHE_NAME = 'randnumber-pwa-v2';
+                const urlsToCache = [
+                    location.href,
+                    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
+                ];
+                
                 const swScript = `
-                    const CACHE_NAME = 'randnumber-pwa-v1';
-                    const urlsToCache = [
-                        location.href,
-                        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
-                    ];
+                    const CACHE_NAME = '${CACHE_NAME}';
+                    const urlsToCache = ${JSON.stringify(urlsToCache)};
                     
                     // 安装Service Worker并缓存资源
                     self.addEventListener('install', event => {
@@ -777,14 +802,16 @@
                                             return caches.delete(name);
                                         })
                                 );
-                            })
+                            }).then(() => self.clients.claim())
                         );
                     });
                     
                     // 拦截网络请求
                     self.addEventListener('fetch', event => {
+                        const requestUrl = new URL(event.request.url);
+                        
                         // 对于同源请求，使用缓存优先策略
-                        if (event.request.url.startsWith(location.origin)) {
+                        if (requestUrl.origin === location.origin) {
                             event.respondWith(
                                 caches.match(event.request)
                                     .then(response => {
@@ -793,8 +820,8 @@
                             );
                         }
                         // 对于字体资源，也使用缓存优先
-                        else if (event.request.url.includes('fontawesome') || 
-                                 event.request.url.includes('fonts.gstatic')) {
+                        else if (requestUrl.href.includes('fontawesome') || 
+                                 requestUrl.href.includes('fonts.gstatic')) {
                             event.respondWith(
                                 caches.match(event.request)
                                     .then(response => {
@@ -824,17 +851,34 @@
                     .then(registration => {
                         console.log('Service Worker 注册成功:', registration);
                         
-                        // 监听安装完成事件
-                        registration.installing.onstatechange = function() {
-                            if (this.state === 'activated') {
-                                console.log('Service Worker 已激活');
-                                checkCacheStatus();
-                            }
-                        };
+                        // 监听Service Worker状态变化
+                        if (registration.installing) {
+                            registration.installing.onstatechange = function() {
+                                if (this.state === 'activated') {
+                                    console.log('Service Worker 已激活');
+                                    updateCacheStatus('已启用', true);
+                                }
+                            };
+                        }
+                        
+                        // 如果已经有激活的Service Worker
+                        if (registration.active) {
+                            updateCacheStatus('已启用', true);
+                        }
+                        
+                        // 监听更新
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'activated') {
+                                    updateCacheStatus('已启用', true);
+                                }
+                            });
+                        });
                     })
                     .catch(error => {
                         console.error('Service Worker 注册失败:', error);
-                        updateCacheStatus('未启用', false);
+                        updateCacheStatus('注册失败', false);
                     });
             } else {
                 console.log('当前浏览器不支持Service Worker');
@@ -845,13 +889,19 @@
         // 更新缓存状态显示
         function updateCacheStatus(text, isActive) {
             cacheStatus.textContent = text;
-            cacheStatus.className = isActive ? 'cache-status online' : 'cache-status offline';
+            if (isActive) {
+                cacheStatus.classList.add('active');
+                cacheStatus.classList.remove('inactive');
+            } else {
+                cacheStatus.classList.add('inactive');
+                cacheStatus.classList.remove('active');
+            }
         }
         
         // 检查缓存状态
         function checkCacheStatus() {
             if ('caches' in window) {
-                caches.has('randnumber-pwa-v1')
+                caches.has('randnumber-pwa-v2')
                     .then(hasCache => {
                         if (hasCache) {
                             console.log('缓存存在，状态为已启用');
@@ -861,8 +911,8 @@
                             updateCacheStatus('未启用', false);
                         }
                     })
-                    .catch(() => {
-                        console.log('缓存检测失败');
+                    .catch(error => {
+                        console.log('缓存检测失败', error);
                         updateCacheStatus('检测失败', false);
                     });
             } else {
@@ -895,13 +945,17 @@
         // 清除应用缓存
         function clearAppCache() {
             if ('caches' in window) {
-                caches.delete('randnumber-pwa-v1')
+                caches.delete('randnumber-pwa-v2')
                     .then(success => {
                         if (success) {
                             console.log('缓存清除成功');
                             showNotification('缓存已清除');
                             updateCacheStatus('未启用', false);
-                            closeCachePanel();
+                            
+                            // 重新加载页面以应用更改
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1000);
                         } else {
                             console.log('缓存清除失败');
                             showNotification('清除缓存失败');
@@ -909,7 +963,7 @@
                     })
                     .catch(error => {
                         console.error('清除缓存失败:', error);
-                        showNotification('清除缓存失败');
+                        showNotification('清除缓存失败: ' + error.message);
                     });
             } else {
                 showNotification('浏览器不支持缓存');
@@ -922,10 +976,10 @@
             
             if (isOnline) {
                 networkState.textContent = '在线';
-                networkState.className = 'cache-status online';
+                networkState.className = 'cache-status active';
             } else {
                 networkState.textContent = '离线';
-                networkState.className = 'cache-status offline';
+                networkState.className = 'cache-status inactive';
             }
         }
         
