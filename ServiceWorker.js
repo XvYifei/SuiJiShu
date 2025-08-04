@@ -27,27 +27,17 @@ self.addEventListener('install', event => {
 // 激活事件：清理旧缓存
 self.addEventListener('activate', event => {
     console.log('Service Worker 激活');
-// 在 activate 事件处理程序中添加以下内容：
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(name => {
-          if (name !== CACHE_NAME) {
-            console.log('删除旧缓存:', name);
-            return caches.delete(name);
-          }
-        })
-      );
-    }).then(() => {
-      // 强制接管所有客户端
-      return self.clients.matchAll({ type: 'window' }).then(windowClients => {
-        windowClients.forEach(windowClient => {
-          windowClient.navigate(windowClient.url);
-        });
-      });
-    })
-  );
+    event.waitUntil(
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.filter(name => name !== CACHE_NAME)
+                    .map(name => {
+                        console.log('删除旧缓存:', name);
+                        return caches.delete(name);
+                    })
+            );
+        }).then(() => self.clients.claim())
+    );
 });
 
 // 拦截请求：智能缓存策略
