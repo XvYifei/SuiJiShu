@@ -3,8 +3,8 @@ const CACHE_NAME = 'pwa-cache-test-v1';
 
 // 需要缓存的资源列表
 const urlsToCache = [
-    '/',  // 根路径
-    'index.html' // 测试页面
+    '/SuiJiShu/',  // 根路径
+    'PWAcacheClean.html' // 测试页面
 ];
 
 // 安装事件：缓存资源
@@ -51,7 +51,30 @@ self.addEventListener('fetch', event => {
                 }
                 
                 console.log('从网络获取:', event.request.url);
-                return fetch(event.request);
+                return fetch(event.request)
+                    .then(response => {
+                        // 动态缓存新请求
+                        if (event.request.url.startsWith('http') && 
+                            event.request.method === 'GET') {
+                            const responseClone = response.clone();
+                            caches.open(CACHE_NAME)
+                                .then(cache => {
+                                    cache.put(event.request, responseClone);
+                                    console.log('动态缓存新资源:', event.request.url);
+                                });
+                        }
+                        return response;
+                    })
+                    .catch(error => {
+                        console.error('网络请求失败:', error);
+                        return new Response('网络连接不可用', {
+                            status: 503,
+                            statusText: 'Service Unavailable',
+                            headers: new Headers({
+                                'Content-Type': 'text/plain'
+                            })
+                        });
+                    });
             })
     );
 });
