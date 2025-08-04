@@ -437,30 +437,6 @@
             }
         }
         
-        /* ************** 离线状态指示器 ************** */
-        .offline-status {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            border-radius: 50px;
-            font-weight: bold;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
-            animation: fadeIn 0.5s ease;
-            background: #ea4335;
-            color: white;
-        }
-        
-        .offline-status.online {
-            background: #34a853;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
         /* ************** 缓存管理面板 ************** */
         .cache-panel {
             display: none;
@@ -490,6 +466,37 @@
         
         .dark-mode .cache-panel h3 {
             color: #a6b0ff;
+        }
+        
+        .cache-panel p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .cache-status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+            margin: 5px 0;
+        }
+        
+        .cache-status.online {
+            background: rgba(52, 168, 83, 0.15);
+            color: #34a853;
+        }
+        
+        .cache-status.offline {
+            background: rgba(234, 67, 53, 0.15);
+            color: #ea4335;
+        }
+        
+        .dark-mode .cache-status.online {
+            background: rgba(52, 168, 83, 0.25);
+        }
+        
+        .dark-mode .cache-status.offline {
+            background: rgba(234, 67, 53, 0.25);
         }
         
         .cache-buttons {
@@ -539,8 +546,6 @@
 </head>
 <body>
     <div class="container">
-        <div class="offline-status" id="offlineStatus">离线</div>
-        
         <div class="main-content">
             <div class="random-number" id="randomNumber">42</div>
             <div class="range-display">
@@ -605,8 +610,13 @@
     <div class="cache-overlay" id="cacheOverlay"></div>
     <div class="cache-panel" id="cachePanel">
         <h3><i class="fas fa-database"></i> 缓存管理</h3>
-        <p>当前缓存状态: <span id="cacheStatus">检测中...</span></p>
-        <p>应用可在离线模式下正常工作</p>
+        
+        <p>当前缓存状态: <span class="cache-status" id="cacheStatus">检测中...</span></p>
+        
+        <p>网络状态: <span class="cache-status" id="networkState">检测中...</span></p>
+        
+        <p id="cacheInfo">应用可在离线模式下正常工作</p>
+        
         <div class="cache-buttons">
             <button class="cache-btn cache-clear" id="clearCacheBtn">清除缓存</button>
             <button class="cache-btn cache-cancel" id="cacheCancelBtn">取消</button>
@@ -618,6 +628,7 @@
         let minValue = 1;
         let maxValue = 100;
         let deferredPrompt;
+        let isOnline = navigator.onLine;
         
         // DOM元素
         const randomNumberEl = document.getElementById('randomNumber');
@@ -633,13 +644,14 @@
         const installPrompt = document.getElementById('installPrompt');
         const installBtn = document.getElementById('installBtn');
         const dismissBtn = document.getElementById('dismissBtn');
-        const offlineStatus = document.getElementById('offlineStatus');
         const manageCacheBtn = document.getElementById('manageCache');
         const cachePanel = document.getElementById('cachePanel');
         const cacheOverlay = document.getElementById('cacheOverlay');
         const clearCacheBtn = document.getElementById('clearCacheBtn');
         const cacheCancelBtn = document.getElementById('cacheCancelBtn');
         const cacheStatus = document.getElementById('cacheStatus');
+        const networkState = document.getElementById('networkState');
+        const cacheInfo = document.getElementById('cacheInfo');
         const addToHomePrompt = document.getElementById('addToHomePrompt');
         
         // 生成随机数
@@ -841,10 +853,12 @@
                     .catch(error => {
                         console.error('Service Worker 注册失败:', error);
                         cacheStatus.textContent = '未启用';
+                        cacheStatus.className = 'cache-status offline';
                     });
             } else {
                 console.log('当前浏览器不支持Service Worker');
                 cacheStatus.textContent = '不支持';
+                cacheStatus.className = 'cache-status offline';
             }
         }
         
@@ -854,17 +868,31 @@
                 caches.has('randnumber-pwa-v1')
                     .then(hasCache => {
                         cacheStatus.textContent = hasCache ? '已启用' : '未启用';
+                        cacheStatus.className = hasCache ? 'cache-status online' : 'cache-status offline';
                     })
                     .catch(() => {
                         cacheStatus.textContent = '检测失败';
+                        cacheStatus.className = 'cache-status offline';
                     });
             } else {
                 cacheStatus.textContent = '不支持';
+                cacheStatus.className = 'cache-status offline';
             }
         }
         
         // 打开缓存管理面板
         function openCachePanel() {
+            // 更新状态显示
+            updateNetworkStatus();
+            checkCacheStatus();
+            
+            // 更新缓存信息文本
+            if (isOnline) {
+                cacheInfo.textContent = '应用已缓存，可在离线模式下正常工作';
+            } else {
+                cacheInfo.textContent = '离线模式：应用已缓存，可以正常工作';
+            }
+            
             cachePanel.style.display = 'block';
             cacheOverlay.style.display = 'block';
         }
@@ -882,6 +910,7 @@
                     .then(() => {
                         showNotification('缓存已清除');
                         cacheStatus.textContent = '未启用';
+                        cacheStatus.className = 'cache-status offline';
                         closeCachePanel();
                     })
                     .catch(error => {
@@ -895,9 +924,16 @@
         
         // 更新网络状态显示
         function updateNetworkStatus() {
-            const isOnline = navigator.onLine;
-            offlineStatus.textContent = isOnline ? '在线' : '离线';
-            offlineStatus.classList.toggle('online', isOnline);
+            isOnline = navigator.onLine;
+            
+            // 更新缓存面板中的网络状态
+            if (isOnline) {
+                networkState.textContent = '在线';
+                networkState.className = 'cache-status online';
+            } else {
+                networkState.textContent = '离线';
+                networkState.className = 'cache-status offline';
+            }
         }
         
         // 打开设置面板
