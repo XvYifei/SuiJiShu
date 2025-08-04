@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <!-- ************** PWA全屏模式设置 ************** -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#6e8efb">
+    <link rel="apple-touch-icon" href="/SuiJiShu/apple-touch-icon.png">
+    <!-- ************** 应用名称 ************** -->
     <title>RandNumber</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -248,6 +251,7 @@
             transform: translateX(-50%) translateY(0);
         }
         
+        /* 添加到主屏幕提示样式 */
         .add-to-home {
             text-align: center;
             color: #888;
@@ -272,6 +276,7 @@
             text-decoration: underline;
         }
         
+        /* ************** 暗黑模式样式 ************** */
         body.dark-mode {
             background: linear-gradient(135deg, #4a00e0, #8e2de2);
         }
@@ -330,6 +335,7 @@
             border-top: 1px solid #333;
         }
         
+        /* ************** PWA安装提示 ************** */
         .pwa-install-prompt {
             position: fixed;
             bottom: 20px;
@@ -418,6 +424,7 @@
             }
         }
         
+        /* ************** 全屏模式调整 ************** */
         @media all and (display-mode: standalone) {
             body {
                 overflow: hidden;
@@ -430,6 +437,7 @@
             }
         }
         
+        /* ************** 缓存管理面板 ************** */
         .cache-panel {
             display: none;
             position: fixed;
@@ -471,33 +479,24 @@
             border-radius: 20px;
             font-weight: 500;
             margin: 5px 0;
-            background: rgba(94, 114, 228, 0.15);
-            color: #5e72e4;
         }
         
-        .cache-status.active {
+        .cache-status.online {
             background: rgba(52, 168, 83, 0.15);
             color: #34a853;
         }
         
-        .cache-status.inactive {
+        .cache-status.offline {
             background: rgba(234, 67, 53, 0.15);
             color: #ea4335;
         }
         
-        .dark-mode .cache-status {
-            background: rgba(166, 176, 255, 0.25);
-            color: #a6b0ff;
-        }
-        
-        .dark-mode .cache-status.active {
+        .dark-mode .cache-status.online {
             background: rgba(52, 168, 83, 0.25);
-            color: #34a853;
         }
         
-        .dark-mode .cache-status.inactive {
+        .dark-mode .cache-status.offline {
             background: rgba(234, 67, 53, 0.25);
-            color: #ea4335;
         }
         
         .cache-buttons {
@@ -543,23 +542,9 @@
             display: none;
             backdrop-filter: blur(3px);
         }
-        
-        .debug-info {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            color: white;
-            z-index: 100;
-        }
     </style>
 </head>
 <body>
-    <div class="debug-info">v2.0.1</div>
-    
     <div class="container">
         <div class="main-content">
             <div class="random-number" id="randomNumber">42</div>
@@ -579,6 +564,7 @@
         
         <div class="settings-panel" id="settingsPanel">
             <div class="settings-header">
+                <!-- ************** 设置面板标题 ************** -->
                 <h2><i class="fas fa-sliders-h"></i> 设置范围</h2>
                 <button class="close-btn" id="closeSettings">完成</button>
             </div>
@@ -597,10 +583,12 @@
                 <i class="fas fa-save"></i> 保存设置
             </button>
             
+            <!-- 缓存管理按钮 -->
             <button class="save-btn" id="manageCache" style="background: linear-gradient(to right, #ff9500, #ff5e3a); margin-top: 15px;">
                 <i class="fas fa-database"></i> 管理缓存
             </button>
             
+            <!-- 添加到主屏幕提示 -->
             <div class="add-to-home" id="addToHomePrompt">
                 <i class="fas fa-mobile-alt"></i> 可<a href="/SuiJiShu/add_to_home_guide.html" target="_blank">添加到主屏幕</a>使用
             </div>
@@ -609,6 +597,7 @@
     
     <div class="notification" id="notification">设置已保存</div>
     
+    <!-- ************** PWA安装提示 ************** -->
     <div class="pwa-install-prompt" id="installPrompt" style="display: none;">
         <p>添加到主屏幕，获得更好的使用体验</p>
         <div class="pwa-install-buttons">
@@ -617,6 +606,7 @@
         </div>
     </div>
     
+    <!-- 缓存管理面板 -->
     <div class="cache-overlay" id="cacheOverlay"></div>
     <div class="cache-panel" id="cachePanel">
         <h3><i class="fas fa-database"></i> 缓存管理</h3>
@@ -666,10 +656,12 @@
         
         // 生成随机数
         function generateRandomNumber() {
+            // 添加动画效果
             randomNumberEl.classList.remove('animate-number');
-            void randomNumberEl.offsetWidth;
+            void randomNumberEl.offsetWidth; // 触发重排
             randomNumberEl.classList.add('animate-number');
             
+            // 生成并显示随机数
             const randomNum = Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue;
             randomNumberEl.textContent = randomNum;
         }
@@ -685,15 +677,18 @@
             const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
             document.body.classList.toggle('dark-mode', isDarkMode);
             
+            // 更新主题颜色
             const themeColor = isDarkMode ? "#1e1e2e" : "#6e8efb";
             document.querySelector('meta[name="theme-color"]').setAttribute('content', themeColor);
         }
         
         // 检测是否在PWA模式中运行
         function checkPWA() {
+            // 检测是否在独立模式中运行（添加到主屏幕）
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                                 window.navigator.standalone;
             
+            // 如果是在PWA模式中，隐藏添加到主屏幕提示
             if (isStandalone) {
                 addToHomePrompt.style.display = 'none';
             }
@@ -704,17 +699,21 @@
             generateRandomNumber();
             updateRangeDisplay();
             checkDarkMode();
-            checkPWA();
+            checkPWA(); // 检测PWA模式
             
+            // 监听暗黑模式变化
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', checkDarkMode);
             
+            // 点击事件：生成新随机数
             document.body.addEventListener('click', function(e) {
+                // 只有当设置面板未显示时才生成随机数
                 if (!settingsPanel.classList.contains('show') && 
                     !cachePanel.style.display) {
                     generateRandomNumber();
                 }
             });
             
+            // 触摸滑动事件
             let startY = 0;
             let isScrolling = false;
             
@@ -727,37 +726,46 @@
                 const currentY = e.touches[0].clientY;
                 const diffY = startY - currentY;
                 
+                // 检测到向上滑动
                 if (diffY > 30 && !isScrolling && !settingsPanel.classList.contains('show')) {
                     openSettings();
                     isScrolling = true;
                 }
             });
             
+            // 设置面板相关事件
             closeSettingsBtn.addEventListener('click', closeSettings);
             saveSettingsBtn.addEventListener('click', saveSettings);
             panelOverlay.addEventListener('click', closeSettings);
             
+            // PWA安装提示事件
             installBtn.addEventListener('click', installPWA);
             dismissBtn.addEventListener('click', dismissInstallPrompt);
             
+            // 监听PWA安装事件
             window.addEventListener('beforeinstallprompt', (e) => {
+                // 防止Chrome自动显示安装提示
                 e.preventDefault();
                 deferredPrompt = e;
                 
+                // 显示自定义安装提示
                 setTimeout(() => {
                     installPrompt.style.display = 'flex';
                 }, 3000);
             });
             
+            // 缓存管理事件
             manageCacheBtn.addEventListener('click', openCachePanel);
             cacheCancelBtn.addEventListener('click', closeCachePanel);
             clearCacheBtn.addEventListener('click', clearAppCache);
             cacheOverlay.addEventListener('click', closeCachePanel);
             
+            // 检测网络状态
             updateNetworkStatus();
             window.addEventListener('online', updateNetworkStatus);
             window.addEventListener('offline', updateNetworkStatus);
             
+            // 注册Service Worker
             registerServiceWorker();
         }
         
@@ -783,46 +791,31 @@
         }
     }
         
-        // 更新缓存状态显示
-        function updateCacheStatus(text, isActive) {
-            cacheStatus.textContent = text;
-            if (isActive) {
-                cacheStatus.classList.add('active');
-                cacheStatus.classList.remove('inactive');
-            } else {
-                cacheStatus.classList.add('inactive');
-                cacheStatus.classList.remove('active');
-            }
-        }
-        
         // 检查缓存状态
         function checkCacheStatus() {
             if ('caches' in window) {
-                caches.has('randnumber-pwa-v2')
+                caches.has('randnumber-pwa-v1')
                     .then(hasCache => {
-                        if (hasCache) {
-                            console.log('缓存存在，状态为已启用');
-                            updateCacheStatus('已启用', true);
-                        } else {
-                            console.log('缓存不存在，状态为未启用');
-                            updateCacheStatus('未启用', false);
-                        }
+                        cacheStatus.textContent = hasCache ? '已启用' : '未启用';
+                        cacheStatus.className = hasCache ? 'cache-status online' : 'cache-status offline';
                     })
-                    .catch(error => {
-                        console.log('缓存检测失败', error);
-                        updateCacheStatus('检测失败', false);
+                    .catch(() => {
+                        cacheStatus.textContent = '检测失败';
+                        cacheStatus.className = 'cache-status offline';
                     });
             } else {
-                console.log('浏览器不支持缓存');
-                updateCacheStatus('不支持', false);
+                cacheStatus.textContent = '不支持';
+                cacheStatus.className = 'cache-status offline';
             }
         }
         
         // 打开缓存管理面板
         function openCachePanel() {
+            // 更新状态显示
             updateNetworkStatus();
             checkCacheStatus();
             
+            // 更新缓存信息文本
             if (isOnline) {
                 cacheInfo.textContent = '应用已缓存，可在离线模式下正常工作';
             } else {
@@ -842,25 +835,16 @@
         // 清除应用缓存
         function clearAppCache() {
             if ('caches' in window) {
-                caches.delete('randnumber-pwa-v2')
-                    .then(success => {
-                        if (success) {
-                            console.log('缓存清除成功');
-                            showNotification('缓存已清除');
-                            updateCacheStatus('未启用', false);
-                            
-                            // 重新加载页面以应用更改
-                            setTimeout(() => {
-                                location.reload();
-                            }, 1000);
-                        } else {
-                            console.log('缓存清除失败');
-                            showNotification('清除缓存失败');
-                        }
+                caches.delete('randnumber-pwa-v1')
+                    .then(() => {
+                        showNotification('缓存已清除');
+                        cacheStatus.textContent = '未启用';
+                        cacheStatus.className = 'cache-status offline';
+                        closeCachePanel();
                     })
                     .catch(error => {
+                        showNotification('清除缓存失败');
                         console.error('清除缓存失败:', error);
-                        showNotification('清除缓存失败: ' + error.message);
                     });
             } else {
                 showNotification('浏览器不支持缓存');
@@ -871,12 +855,13 @@
         function updateNetworkStatus() {
             isOnline = navigator.onLine;
             
+            // 更新缓存面板中的网络状态
             if (isOnline) {
                 networkState.textContent = '在线';
-                networkState.className = 'cache-status active';
+                networkState.className = 'cache-status online';
             } else {
                 networkState.textContent = '离线';
-                networkState.className = 'cache-status inactive';
+                networkState.className = 'cache-status offline';
             }
         }
         
@@ -899,6 +884,7 @@
             let newMin = parseInt(minInput.value);
             let newMax = parseInt(maxInput.value);
             
+            // 验证输入
             if (isNaN(newMin) || isNaN(newMax)) {
                 showNotification('请输入有效数字');
                 return;
@@ -914,12 +900,20 @@
                 return;
             }
             
+            // 更新设置
             minValue = newMin;
             maxValue = newMax;
             
+            // 更新显示
             updateRangeDisplay();
+            
+            // 重新生成随机数
             generateRandomNumber();
+            
+            // 关闭面板
             closeSettings();
+            
+            // 显示成功通知
             showNotification('设置已保存');
         }
         
