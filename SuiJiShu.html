@@ -275,6 +275,7 @@
             background: rgba(94, 114, 228, 0.1);
             text-decoration: underline;
         }
+        
         /* ************** 暗黑模式样式 ************** */
         body.dark-mode {
             background: linear-gradient(135deg, #4a00e0, #8e2de2);
@@ -435,11 +436,110 @@
                 bottom: 60px;
             }
         }
+        
+        /* ************** 离线状态指示器 ************** */
+        .offline-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            animation: fadeIn 0.5s ease;
+            background: #ea4335;
+            color: white;
+        }
+        
+        .offline-status.online {
+            background: #34a853;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* ************** 缓存管理面板 ************** */
+        .cache-panel {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            max-width: 90%;
+            width: 350px;
+            text-align: center;
+        }
+        
+        .dark-mode .cache-panel {
+            background: #1e1e2e;
+        }
+        
+        .cache-panel h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #5e72e4;
+        }
+        
+        .dark-mode .cache-panel h3 {
+            color: #a6b0ff;
+        }
+        
+        .cache-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .cache-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .cache-clear {
+            background: #ea4335;
+            color: white;
+            border: none;
+        }
+        
+        .cache-cancel {
+            background: transparent;
+            border: 1px solid #ddd;
+            color: #333;
+        }
+        
+        .dark-mode .cache-cancel {
+            border-color: #555;
+            color: #ddd;
+        }
+        
+        .cache-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+            backdrop-filter: blur(3px);
+        }
     </style>
 </head>
 <body>
     <div class="container">
-
+        <div class="offline-status" id="offlineStatus">离线</div>
         
         <div class="main-content">
             <div class="random-number" id="randomNumber">42</div>
@@ -478,6 +578,11 @@
                 <i class="fas fa-save"></i> 保存设置
             </button>
             
+            <!-- 缓存管理按钮 -->
+            <button class="save-btn" id="manageCache" style="background: linear-gradient(to right, #ff9500, #ff5e3a); margin-top: 15px;">
+                <i class="fas fa-database"></i> 管理缓存
+            </button>
+            
             <!-- 添加到主屏幕提示 -->
             <div class="add-to-home" id="addToHomePrompt">
                 <i class="fas fa-mobile-alt"></i> 可<a href="/SuiJiShu/add_to_home_guide.html" target="_blank">添加到主屏幕</a>使用
@@ -493,6 +598,18 @@
         <div class="pwa-install-buttons">
             <button class="pwa-install-btn" id="installBtn">添加</button>
             <button class="pwa-dismiss-btn" id="dismissBtn">取消</button>
+        </div>
+    </div>
+    
+    <!-- 缓存管理面板 -->
+    <div class="cache-overlay" id="cacheOverlay"></div>
+    <div class="cache-panel" id="cachePanel">
+        <h3><i class="fas fa-database"></i> 缓存管理</h3>
+        <p>当前缓存状态: <span id="cacheStatus">检测中...</span></p>
+        <p>应用可在离线模式下正常工作</p>
+        <div class="cache-buttons">
+            <button class="cache-btn cache-clear" id="clearCacheBtn">清除缓存</button>
+            <button class="cache-btn cache-cancel" id="cacheCancelBtn">取消</button>
         </div>
     </div>
     
@@ -516,6 +633,14 @@
         const installPrompt = document.getElementById('installPrompt');
         const installBtn = document.getElementById('installBtn');
         const dismissBtn = document.getElementById('dismissBtn');
+        const offlineStatus = document.getElementById('offlineStatus');
+        const manageCacheBtn = document.getElementById('manageCache');
+        const cachePanel = document.getElementById('cachePanel');
+        const cacheOverlay = document.getElementById('cacheOverlay');
+        const clearCacheBtn = document.getElementById('clearCacheBtn');
+        const cacheCancelBtn = document.getElementById('cacheCancelBtn');
+        const cacheStatus = document.getElementById('cacheStatus');
+        const addToHomePrompt = document.getElementById('addToHomePrompt');
         
         // 生成随机数
         function generateRandomNumber() {
@@ -544,6 +669,7 @@
             const themeColor = isDarkMode ? "#1e1e2e" : "#6e8efb";
             document.querySelector('meta[name="theme-color"]').setAttribute('content', themeColor);
         }
+        
         // 检测是否在PWA模式中运行
         function checkPWA() {
             // 检测是否在独立模式中运行（添加到主屏幕）
@@ -555,19 +681,22 @@
                 addToHomePrompt.style.display = 'none';
             }
         }
+        
         // 初始化页面
         function init() {
             generateRandomNumber();
             updateRangeDisplay();
             checkDarkMode();
-            checkPWA(); // 检测PWA模式            
+            checkPWA(); // 检测PWA模式
+            
             // 监听暗黑模式变化
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', checkDarkMode);
             
             // 点击事件：生成新随机数
             document.body.addEventListener('click', function(e) {
                 // 只有当设置面板未显示时才生成随机数
-                if (!settingsPanel.classList.contains('show')) {
+                if (!settingsPanel.classList.contains('show') && 
+                    !cachePanel.style.display) {
                     generateRandomNumber();
                 }
             });
@@ -612,6 +741,163 @@
                     installPrompt.style.display = 'flex';
                 }, 3000);
             });
+            
+            // 缓存管理事件
+            manageCacheBtn.addEventListener('click', openCachePanel);
+            cacheCancelBtn.addEventListener('click', closeCachePanel);
+            clearCacheBtn.addEventListener('click', clearAppCache);
+            cacheOverlay.addEventListener('click', closeCachePanel);
+            
+            // 检测网络状态
+            updateNetworkStatus();
+            window.addEventListener('online', updateNetworkStatus);
+            window.addEventListener('offline', updateNetworkStatus);
+            
+            // 注册Service Worker
+            registerServiceWorker();
+        }
+        
+        // 注册Service Worker
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                // 创建Service Worker脚本
+                const swScript = `
+                    const CACHE_NAME = 'randnumber-pwa-v1';
+                    const urlsToCache = [
+                        location.href,
+                        'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
+                    ];
+                    
+                    // 安装Service Worker并缓存资源
+                    self.addEventListener('install', event => {
+                        event.waitUntil(
+                            caches.open(CACHE_NAME)
+                                .then(cache => {
+                                    console.log('缓存核心资源');
+                                    return cache.addAll(urlsToCache);
+                                })
+                        );
+                    });
+                    
+                    // 激活时清理旧缓存
+                    self.addEventListener('activate', event => {
+                        event.waitUntil(
+                            caches.keys().then(cacheNames => {
+                                return Promise.all(
+                                    cacheNames.filter(name => name !== CACHE_NAME)
+                                        .map(name => caches.delete(name))
+                                );
+                            })
+                        );
+                    });
+                    
+                    // 拦截网络请求
+                    self.addEventListener('fetch', event => {
+                        // 对于同源请求，使用缓存优先策略
+                        if (event.request.url.startsWith(location.origin)) {
+                            event.respondWith(
+                                caches.match(event.request)
+                                    .then(response => {
+                                        return response || fetch(event.request);
+                                    })
+                            );
+                        }
+                        // 对于字体资源，也使用缓存优先
+                        else if (event.request.url.includes('fontawesome') || 
+                                 event.request.url.includes('fonts.gstatic')) {
+                            event.respondWith(
+                                caches.match(event.request)
+                                    .then(response => {
+                                        return response || fetch(event.request)
+                                            .then(networkResponse => {
+                                                // 将新资源加入缓存
+                                                caches.open(CACHE_NAME)
+                                                    .then(cache => {
+                                                        cache.put(event.request, networkResponse.clone());
+                                                    });
+                                                return networkResponse;
+                                            });
+                                    })
+                            );
+                        }
+                        // 其他请求直接访问网络
+                        else {
+                            event.respondWith(fetch(event.request));
+                        }
+                    });
+                `;
+                
+                // 创建Blob URL并注册Service Worker
+                const blob = new Blob([swScript], {type: 'application/javascript'});
+                const swUrl = URL.createObjectURL(blob);
+                
+                navigator.serviceWorker.register(swUrl)
+                    .then(registration => {
+                        console.log('Service Worker 注册成功:', registration);
+                        
+                        // 检查缓存状态
+                        checkCacheStatus();
+                    })
+                    .catch(error => {
+                        console.error('Service Worker 注册失败:', error);
+                        cacheStatus.textContent = '未启用';
+                    });
+            } else {
+                console.log('当前浏览器不支持Service Worker');
+                cacheStatus.textContent = '不支持';
+            }
+        }
+        
+        // 检查缓存状态
+        function checkCacheStatus() {
+            if ('caches' in window) {
+                caches.has('randnumber-pwa-v1')
+                    .then(hasCache => {
+                        cacheStatus.textContent = hasCache ? '已启用' : '未启用';
+                    })
+                    .catch(() => {
+                        cacheStatus.textContent = '检测失败';
+                    });
+            } else {
+                cacheStatus.textContent = '不支持';
+            }
+        }
+        
+        // 打开缓存管理面板
+        function openCachePanel() {
+            cachePanel.style.display = 'block';
+            cacheOverlay.style.display = 'block';
+        }
+        
+        // 关闭缓存管理面板
+        function closeCachePanel() {
+            cachePanel.style.display = 'none';
+            cacheOverlay.style.display = 'none';
+        }
+        
+        // 清除应用缓存
+        function clearAppCache() {
+            if ('caches' in window) {
+                caches.delete('randnumber-pwa-v1')
+                    .then(() => {
+                        showNotification('缓存已清除');
+                        cacheStatus.textContent = '未启用';
+                        closeCachePanel();
+                    })
+                    .catch(error => {
+                        showNotification('清除缓存失败');
+                        console.error('清除缓存失败:', error);
+                    });
+            } else {
+                showNotification('浏览器不支持缓存');
+            }
+        }
+        
+        // 更新网络状态显示
+        function updateNetworkStatus() {
+            const isOnline = navigator.onLine;
+            offlineStatus.textContent = isOnline ? '在线' : '离线';
+            offlineStatus.classList.toggle('online', isOnline);
         }
         
         // 打开设置面板
